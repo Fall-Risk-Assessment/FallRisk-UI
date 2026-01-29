@@ -1,107 +1,25 @@
-import React, { useState, useEffect } from "react";
-import api from "../api/axios";
+import React from "react";
 import "../css/deviceProfile.css";
 // import "../css/modal.css"; // Replaced by Common Modal
 import { Button } from "../components/common/Button";
 import { Input, Select } from "../components/common/Input";
 import { Modal } from "../components/common/Modal";
+import { useDeviceProfile } from "../hooks/useDeviceProfile.jsx";
 
 export const DeviceProfile = () => {
-    const [profiles, setProfiles] = useState([]);
-    const [showCreateForm, setShowCreateForm] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-
-    const [editingId, setEditingId] = useState(null);
-    const [formData, setFormData] = useState({
-        profile_id: "",
-        name: "",
-        type: "32x32 Grid",
-        dataFormat: "",
-        description: ""
-    });
-
-    useEffect(() => {
-        fetchProfiles();
-    }, []);
-
-    const fetchProfiles = async () => {
-        setIsLoading(true);
-        try {
-            const response = await api.get("/admin/get-profiles");
-            setProfiles(response.data);
-        } catch (error) {
-            console.error("Failed to fetch profiles:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
-    const handleEdit = (profile) => {
-        setEditingId(profile.id);
-        setFormData({
-            profile_id: profile.profile_id,
-            name: profile.name,
-            type: profile.type || "32x32 Grid",
-            dataFormat: profile.dataFormat || "JSON",
-            description: profile.description || ""
-        });
-        setShowCreateForm(true);
-    };
-
-    const handleSubmit = async () => {
-        try {
-            if (!formData.profile_id || !formData.name) {
-                alert("Profile ID and Name are required");
-                return;
-            }
-
-            if (editingId) {
-                await api.put(`/admin/update-profile/${editingId}`, formData);
-                alert("Profile updated successfully!");
-            } else {
-                await api.post("/admin/create-profile", formData);
-                alert("Profile created successfully!");
-            }
-
-            fetchProfiles();
-            resetForm();
-        } catch (error) {
-            console.error("Failed to save profile:", error);
-            alert("Failed to save profile: " + (error.response?.data?.message || error.message));
-        }
-    };
-
-    const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this profile?")) {
-            try {
-                await api.delete(`/admin/delete-profile/${id}`);
-                fetchProfiles();
-            } catch (error) {
-                console.error("Failed to delete profile:", error);
-                alert("Failed to delete profile");
-            }
-        }
-    };
-
-    const resetForm = () => {
-        setShowCreateForm(false);
-        setEditingId(null);
-        setFormData({
-            profile_id: "",
-            name: "",
-            type: "32x32 Grid",
-            dataFormat: "",
-            description: ""
-        });
-    }
+    const {
+        profiles,
+        showCreateForm,
+        setShowCreateForm,
+        isLoading,
+        editingId,
+        formData,
+        handleInputChange,
+        handleEdit,
+        handleSubmit,
+        handleDelete,
+        resetForm
+    } = useDeviceProfile();
 
     return (
         <div>
@@ -112,7 +30,7 @@ export const DeviceProfile = () => {
                 </div>
                 {!showCreateForm && (
                     <Button
-                        className="add-user-btn"
+                        className="color-btn"
                         onClick={() => {
                             resetForm();
                             setShowCreateForm(true);

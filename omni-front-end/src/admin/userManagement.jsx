@@ -1,129 +1,27 @@
-import React, { useState, useEffect } from "react";
-import api from "../api/axios";
+import React from "react";
 import "../css/userManagement.css";
 // import "../css/modal.css"; // Replaced by Common Modal
 import { Button } from "../components/common/Button";
 import { Input, Select } from "../components/common/Input";
 import { Modal } from "../components/common/Modal";
+import { useUserManagement } from "../hooks/useUserManagement.jsx";
 
 export const UserManagement = () => {
-    const [userList, setUserList] = useState([]);
-    const [projectList, setProjectList] = useState([]);
-    const [showForm, setShowForm] = useState(false);
-    const [editingId, setEditingId] = useState(null);
-    const [formData, setFormData] = useState({
-        Username: "", // Matches user request form field name
-        email: "",
-        password: "",
-        role: "User",
-        project: "Yoga Research Lab",
-        status: "Active"
-    });
-
-    const fetchUsers = async () => {
-        try {
-            const response = await api.get("/admin/get-users");
-            setUserList(response.data);
-        } catch (error) {
-            console.error("Failed to fetch users:", error);
-        }
-    };
-
-    const fetchProjects = async () => {
-        try {
-            const response = await api.get("/admin/get-projects");
-            setProjectList(response.data);
-        } catch (error) {
-            console.error("Failed to fetch projects:", error);
-        }
-    };
-
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        fetchUsers();
-        fetchProjects();
-    }, []);
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
-    const handleEdit = (user) => {
-        setEditingId(user.id);
-        // Convert role to Title Case to match select options (e.g., "SUPPORTER" -> "Supporter")
-        const titleCaseRole = user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase();
-
-        setFormData({
-            Username: user.name,
-            email: user.email,
-            password: "", // Don't show existing password
-            role: titleCaseRole,
-            project: user.project,
-            status: user.status
-        });
-        setShowForm(true);
-    };
-
-    const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this user?")) {
-            try {
-                await api.delete(`/admin/delete-user/${id}`);
-                fetchUsers();
-            } catch (error) {
-                console.error("Failed to delete user:", error);
-                alert("Failed to delete user");
-            }
-        }
-    };
-
-    const handleSubmit = async () => {
-        try {
-            const payload = {
-                username: formData.Username,
-                email: formData.email,
-                password: formData.password || "default123", // basic fallback if editing
-                role_name: formData.role,
-                project_name: formData.project,
-                status: formData.status
-            };
-
-            if (editingId) {
-                // Update
-                await api.put(`/admin/update-user/${editingId}`, payload);
-                alert("User updated successfully!");
-            } else {
-                // Create
-                if (!formData.Username || !formData.email || !formData.password) {
-                    alert("Please fill in all required fields (Username, Email, Password)");
-                    return;
-                }
-                await api.post("/admin/create-user", payload);
-                alert("User created successfully!");
-            }
-            resetForm();
-            fetchUsers();
-        } catch (error) {
-            console.error("Failed to save user:", error);
-            alert("Failed to save user: " + (error.response?.data?.message || error.message));
-        }
-    };
-
-    const resetForm = () => {
-        setShowForm(false);
-        setEditingId(null);
-        setFormData({
-            Username: "",
-            email: "",
-            password: "",
-            role: "User",
-            project: "Yoga Research Lab",
-            status: "Active"
-        });
-    };
+    const {
+        userList,
+        projectList,
+        showForm,
+        setShowForm,
+        editingId,
+        setEditingId,
+        formData,
+        setFormData,
+        handleInputChange,
+        handleEdit,
+        handleDelete,
+        handleSubmit,
+        resetForm
+    } = useUserManagement();
 
     return (
         <div>
