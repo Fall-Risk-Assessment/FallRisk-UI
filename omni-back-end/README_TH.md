@@ -92,6 +92,16 @@ node index.js
 
 _Log ควรขึ้นว่า: `🚀 Ingest Service starting...` และ `Connected to MQTT`_
 
+**จอที่ 3: Start Serial Bridge (Optional - ถ้ามี Hardware ต่อ USB)**
+
+```bash
+cd omni-back-end/serial-bridge
+npm install
+node bridge.js
+```
+
+_ระบบจะค้นหา Arduino โดยอัตโนมัติและส่งข้อมูลเข้า MQTT_
+
 ---
 
 ## 🔌 API Documentation
