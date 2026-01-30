@@ -595,3 +595,23 @@
   background: white;
   border-radius: 8px;
 }
+
+.profile-card-action-btn {
+  padding: 4px;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  min-width: auto;
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.profile-card-action-btn:hover {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border-color: #e5e7eb;
+}

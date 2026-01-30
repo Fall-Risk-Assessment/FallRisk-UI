@@ -20,7 +20,12 @@ export const UserManagement = () => {
         handleEdit,
         handleDelete,
         handleSubmit,
-        resetForm
+        resetForm,
+        filteredUserList,
+        filterRole,
+        setFilterRole,
+        filterProject,
+        setFilterProject
     } = useUserManagement();
 
     return (
@@ -158,22 +163,34 @@ export const UserManagement = () => {
             <div className="filters-bar">
                 <div className="filter-group">
                     <label>Filter by Role</label>
-                    <select className="filter-select">
-                        <option>All Roles</option>
-                        <option>User</option>
-                        <option>Supporter</option>
+                    <select
+                        className="filter-select"
+                        value={filterRole}
+                        onChange={(e) => setFilterRole(e.target.value)}
+                    >
+                        <option value="All Roles">All Roles</option>
+                        <option value="Admin">Admin</option>
+                        <option value="User">User</option>
+                        <option value="Supporter">Supporter</option>
+                        <option value="Operator">Operator</option>
                     </select>
                 </div>
                 <div className="filter-group">
                     <label>Filter by Project</label>
-                    <select className="filter-select">
-                        <option>All Projects</option>
-                        <option>Yoga Research Lab</option>
-                        <option>Physical Therapy Clinic</option>
-                        <option>Sports Performance</option>
+                    <select
+                        className="filter-select"
+                        value={filterProject}
+                        onChange={(e) => setFilterProject(e.target.value)}
+                    >
+                        <option value="All Projects">All Projects</option>
+                        {projectList.map(project => (
+                            <option key={project.id || project.name} value={project.name}>
+                                {project.name}
+                            </option>
+                        ))}
                     </select>
                 </div>
-                <span className="showing-text">Showing {userList.length} of {userList.length} users</span>
+                <span className="showing-text">Showing {filteredUserList.length} of {userList.length} users</span>
             </div>
 
             <div className="user-table-container">
@@ -190,7 +207,7 @@ export const UserManagement = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {userList.map((user) => (
+                        {filteredUserList.map((user) => (
                             <tr key={user.id}>
                                 <td>
                                     <div className="user-cell">

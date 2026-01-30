@@ -15,6 +15,10 @@ export const useUserManagement = () => {
         status: "Active"
     });
 
+    // Filter State
+    const [filterRole, setFilterRole] = useState("All Roles");
+    const [filterProject, setFilterProject] = useState("All Projects");
+
     useEffect(() => {
         fetchUsers();
         fetchProjects();
@@ -116,6 +120,13 @@ export const useUserManagement = () => {
         });
     };
 
+    // Filter Logic
+    const filteredUserList = userList.filter(user => {
+        const matchesRole = filterRole === "All Roles" || (user.role && user.role.toLowerCase() === filterRole.toLowerCase());
+        const matchesProject = filterProject === "All Projects" || (user.project && user.project.toLowerCase() === filterProject.toLowerCase());
+        return matchesRole && matchesProject;
+    });
+
     return {
         userList,
         projectList,
@@ -129,6 +140,12 @@ export const useUserManagement = () => {
         handleEdit,
         handleDelete,
         handleSubmit,
-        resetForm
+        resetForm,
+        // Filter Exports
+        filteredUserList,
+        filterRole,
+        setFilterRole,
+        filterProject,
+        setFilterProject
     };
 };

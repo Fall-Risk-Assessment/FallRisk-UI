@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { dashboardService } from "../services/dashboardService.jsx";
+import { profileService } from "../services/profileService.jsx";
 
 export const useDashboard = () => {
     const [profiles, setProfiles] = useState([]);
@@ -115,6 +116,25 @@ export const useDashboard = () => {
         setEditingProfileId(null);
     };
 
+    const handleDeleteProfile = async (id) => {
+        const profileToDelete = profiles.find(p => p.id === id);
+
+        if (profileToDelete && profileToDelete.deviceCount > 0) {
+            alert(`Cannot delete profile "${profileToDelete.name}" because it has ${profileToDelete.deviceCount} active device(s) linked to it.\n\nPlease delete the devices first.`);
+            return;
+        }
+
+        if (window.confirm("Are you sure you want to delete this profile?")) {
+            try {
+                await profileService.deleteProfile(id);
+                fetchDashboardData(); // Refresh dashboard
+            } catch (error) {
+                console.error("Failed to delete profile:", error);
+                alert("Failed to delete profile");
+            }
+        }
+    };
+
     return {
         profiles,
         stats,
@@ -129,6 +149,7 @@ export const useDashboard = () => {
         editingProfileId,
         setEditingProfileId, // Exported in case we need to clear it directly
         handleEditProfile,
-        handleUpdateProfile
+        handleUpdateProfile,
+        handleDeleteProfile
     };
 };

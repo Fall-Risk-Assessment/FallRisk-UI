@@ -9,7 +9,7 @@ import { Card } from "../components/common/Card";
 import { useDashboard } from "../hooks/useDashboard.jsx";
 
 // Helper Component: Profile Card
-const ProfileCard = ({ profile, navigate, onEdit }) => {
+const ProfileCard = ({ profile, navigate, onEdit, onDelete }) => {
   return (
     <Card
       className="device-card"
@@ -29,28 +29,31 @@ const ProfileCard = ({ profile, navigate, onEdit }) => {
           PROFILE
         </span>
         <Button
-          className="btn-edit-action"
+          className="profile-card-action-btn"
           variant="ghost"
           onClick={(e) => {
             e.stopPropagation();
             onEdit(profile);
-          }}
-          style={{
-            padding: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minWidth: 'auto',
-            border: 'none',
-            backgroundColor: 'transparent',
-            color: '#666',
-            cursor: 'pointer'
           }}
           title="Edit Profile"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+        </Button>
+        <Button
+          className="profile-card-action-btn"
+          variant="ghost"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(profile.id);
+          }}
+          title="Delete Profile"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
           </svg>
         </Button>
       </div>
@@ -95,7 +98,8 @@ export const Dashboard = () => {
     handleCreateProfile,
     editingProfileId,
     handleEditProfile,
-    handleUpdateProfile
+    handleUpdateProfile,
+    handleDeleteProfile
   } = useDashboard();
 
   const statCards = [
@@ -140,7 +144,7 @@ export const Dashboard = () => {
       <div className="card-grid">
         {profiles.length > 0 ? (
           profiles.map((prof) => (
-            <ProfileCard key={prof.id} profile={prof} navigate={navigate} onEdit={handleEditProfile} />
+            <ProfileCard key={prof.id} profile={prof} navigate={navigate} onEdit={handleEditProfile} onDelete={handleDeleteProfile} />
           ))
         ) : (
           <div className="empty-state-message">

@@ -75,6 +75,13 @@ export const useDeviceProfile = () => {
     };
 
     const handleDelete = async (id) => {
+        const profileToDelete = profiles.find(p => p.id === id);
+
+        if (profileToDelete && profileToDelete.activeDevices > 0) {
+            alert(`Cannot delete profile "${profileToDelete.name}" because it has ${profileToDelete.activeDevices} active device(s) linked to it.\n\nPlease delete the devices first.`);
+            return;
+        }
+
         if (window.confirm("Are you sure you want to delete this profile?")) {
             try {
                 await profileService.deleteProfile(id);

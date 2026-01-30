@@ -12,7 +12,7 @@
 }
 
 .color-btn {
-    background-color:#1a1a1a;
+    background-color: #1a1a1a;
     color: white;
 }
 
@@ -266,4 +266,13 @@
     border-radius: 6px;
     font-weight: 500;
     cursor: pointer;
+}
+
+.common-modal-content.device-inventory-modal {
+    max-width: 700px;
+}
+
+.device-inventory-modal .common-input-field {
+    width: 100%;
+    box-sizing: border-box;
 }
