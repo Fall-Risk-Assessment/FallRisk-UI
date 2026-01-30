@@ -22,12 +22,14 @@ router.get("/get-user/:id", adminController.getUserById);
 
 // Device Device Management
 router.post("/create-device", deviceController.createDevice); // Removed requireRole('ADMIN') for Demo
+router.put("/update-device/:id", deviceController.updateDevice); // NEW for Demo
 router.get("/get-devices", deviceController.getAllDevices);
 router.delete("/delete-device/:id", deviceController.deleteDevice); // Removed requireRole('ADMIN') for Demo
 router.get("/get-telemetry/:deviceId", telemetryController.getDeviceTelemetry);
 
 // Device Profile Management
 router.post("/create-profile", deviceProfileController.createProfile); // Removed requireRole('ADMIN') for Demo
+router.put("/update-profile/:id", deviceProfileController.updateProfile); // NEW for Demo
 router.get("/get-profiles", deviceProfileController.getAllProfiles);
 router.delete("/delete-profile/:id", deviceProfileController.deleteProfile); // Removed requireRole('ADMIN') for Demo
 router.get("/get-device-profiles", deviceProfileController.getAllProfiles); // Alias/Update existing usage

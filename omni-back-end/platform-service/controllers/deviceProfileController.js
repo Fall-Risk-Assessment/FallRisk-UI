@@ -36,6 +36,31 @@ export const createProfile = async (req, res) => {
     }
 };
 
+// Update Device Profile
+export const updateProfile = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, type, dataFormat } = req.body;
+
+        const updateData = {};
+        if (name) updateData.name = name;
+        if (type) updateData.data_type = type;
+        if (dataFormat) {
+             updateData.schema_definition = { format: dataFormat };
+        }
+
+        const updatedProfile = await prisma.deviceProfile.update({
+            where: { id: id },
+            data: updateData
+        });
+
+        res.json(updatedProfile);
+    } catch (error) {
+        console.error("Update Profile Error:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
 // Get All Profiles
 export const getAllProfiles = async (req, res) => {
     try {

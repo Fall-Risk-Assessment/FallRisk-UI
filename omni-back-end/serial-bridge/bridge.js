@@ -4,7 +4,7 @@ import mqtt from 'mqtt';
 
 // --- CONFIGURATION ---
 const MQTT_BROKER = 'mqtt://localhost:1883';
-const BAUD_RATE = 115200; // Must match Arduino
+const BAUD_RATE = 460800; // Must match Arduino
 
 // --- MQTT SETUP ---
 const mqttClient = mqtt.connect(MQTT_BROKER);

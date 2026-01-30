@@ -1,203 +1,171 @@
-# 📖 Omni Project - คู่มือระบบ Backend ฉบับสมบูรณ์ (Complete Guide)
+# 🌐 Omni Project: Backend API & Service Documentation
 
-เอกสารนี้รวบรวมรายละเอียดเชิงลึกของระบบ Backend ทั้งหมด เพื่อให้ทีมงานเข้าใจการทำงานทุกขั้นตอน ตั้งแต่ Hardware ไปจนถึงการแสดงผลครับ
+เอกสารนี้รวบรวมรายละเอียดของระบบ Backend สำหรับ Omni Project ซึ่งเป็นแพลตฟอร์ม IoT สำหรับรับส่งข้อมูลจากอุปกรณ์ต่างๆ (เช่น Matrix Sensor, Temperature Sensor) ขึ้นสู่ระบบ Cloud เพื่อแสดงผลแบบ Real-time และเก็บข้อมูลย้อนหลัง
 
 ---
 
-## 🏗️ 1. สถาปัตยกรรมระบบ (System Architecture)
+## 🏗️ System Architecture (โครงสร้างระบบ)
 
-ระบบเราทำงานแบบ **Event-Driven & Real-time** เชื่อมต่อกันดังนี้:
+ระบบ Backend ของเราเป็นแบบ **Microservices Architecture** ซึ่งประกอบด้วย 3 ส่วนหลัก:
 
-```mermaid
-graph LR
-    A[Arduino Pressure Mat] -- USB Serial --> B(Serial Gateway);
-    B -- MQTT --> C(Broker);
-    C -- Subscribe --> D(Platform Service);
-    C -- Subscribe --> E(Ingest Service);
-    D -- Socket.io --> F[Frontend Live Monitor];
-    E -- Write --> G[(InfluxDB)];
-    F -- HTTP API --> D;
-    D -- Query --> H[(PostgresDB)];
+1.  **Ingest Service** (`omni-back-end/ingest-service`)
+    - **หน้าที่:** เป็นประตูด่านหน้าด่านแรกที่รับข้อมูลดิบจาก Hardware ผ่าน MQTT หรือ HTTP
+    - **การทำงาน:**
+      - เชื่อมต่อกับ MQTT Broker เพื่อรับข้อมูลจาก Topic `iot/+/telemetry`
+      - ตรวจสอบความถูกต้องของข้อมูล (Validation) และ Format ตาม Device Profile
+      - บันทึกข้อมูลลง **InfluxDB** (Database สำหรับ Time-series data)
+    - **Tech Stack:** NodeJS, InfluxDB Client, MQTT Client
+
+2.  **Platform Service** (`omni-back-end/platform-service`)
+    - **หน้าที่:** API Server หลักสำหรับการจัดการระบบ (Core Business Logic)
+    - **การทำงาน:**
+      - จัดการผู้ใช้งาน (User Management) และการเข้าสู่ระบบ (Authentication)
+      - จัดการอุปกรณ์ (Device Management) และสร้าง Device Profiles
+      - ให้บริการ REST API แก่ Frontend
+      - ทำหน้าที่เป็น **Socket.IO Server** เพื่อส่งข้อมูล Real-time ไปยัง Frontend (`liveMonitor`)
+    - **Tech Stack:** NodeJS, Express, PostgreSQL (Prisma ORM), Socket.IO
+
+3.  **Serial Bridge** (`omni-back-end/serial-bridge`)
+    - **หน้าที่:** เชื่อมต่ออุปกรณ์ USB/Serial Port เข้ากับระบบ MQTT (สำหรับกรณีต่อตรงกับคอมพิวเตอร์)
+    - **การทำงาน:** อ่านค่าจาก Serial Port และส่งขึ้น MQTT Topic
+
+---
+
+## 🚀 การติดตั้งและเริ่มใช้งาน (Getting Started)
+
+### 1. Prerequisites (สิ่งที่ต้องมี)
+
+ก่อนรันระบบ ตรวจสอบให้แน่ใจว่าเครื่องของคุณมี:
+
+- **Node.js** (v18 หรือใหม่กว่า)
+- **PostgreSQL** (สำหรับเก็บ User/Device Data)
+- **InfluxDB v2** (สำหรับเก็บ Sensor Data)
+- **Mosquitto MQTT Broker** (หรือใช้ Cloud Broker)
+
+_(หมายเหตุ: แนะนำให้รัน Database และ Broker ผ่าน Docker ใช้งานง่ายกว่า)_
+
+### 2. ตั้งค่า Environment Variables (.env)
+
+สร้างไฟล์ `.env` ในแต่ละ Service ตามตัวอย่าง:
+
+**สำหรับ `platform-service/.env`:**
+
+```env
+PORT=4000
+DATABASE_URL="postgresql://user:password@localhost:5432/omni_db"
+JWT_SECRET="mySuperSecretKey123"
+MQTT_BROKER="mqtt://localhost:1883"
 ```
 
-### การไหลของข้อมูล (How it works step-by-step):
+**สำหรับ `ingest-service/.env`:**
 
-1.  **กดแผ่นยาง:** Arduino อ่านค่าแรงกด (0-1023) จาก Sensor 256 จุด (16x16).
-2.  **ส่งข้อมูล (Serial):** Arduino ส่งข้อมูลผ่านสาย USB เป็นข้อความ `TABLE ...ข้อมูล... END`.
-3.  **แปลงข้อมูล (Gateway):** โปรแกรม `gateway.js` อ่าน Serial Port, แปลงข้อความเป็น JSON Array.
-4.  **กระจายข่าว (MQTT):** Gateway ส่ง JSON ไปที่ MQTT Topic `iot/matrix/stream`.
-5.  **แยกทางเดินข้อมูล (Fork):**
-    - **ทางที่ 1 (Live View):** `Platform Service` รับ MQTT แล้วส่งต่อทันทีผ่าน Socket.io ไปหา Frontend (เร็วมาก < 50ms).
-    - **ทางที่ 2 (History):** `Ingest Service` รับ MQTT แล้วบันทึกลง InfluxDB เก็บไว้ดูย้อนหลัง.
-6.  **แสดงผล:** Frontend ได้รับข้อมูลจาก Socket.io ก็นำไปวาดสี Heatmap (แดง/น้ำเงิน).
+```env
+INFLUX_URL="http://localhost:8086"
+INFLUX_TOKEN="my-token-from-influxdb"
+INFLUX_ORG="my-org"
+INFLUX_BUCKET="omni-sensor-data"
+MQTT_BROKER="mqtt://localhost:1883"
+```
 
----
+### 3. รันโปรแกรม (Running)
 
-## 📂 2. เจาะลึกไฟล์และหน้าที่ (File Descriptions)
+เปิด Terminal แยก 2 จอ:
 
-### 🅰️ Platform Service (`omni-back-end/platform-service`)
+**จอที่ 1: Start Platform Service**
 
-หัวใจหลักของระบบ รันที่ Port `4000`.
+```bash
+cd omni-back-end/platform-service
+npm install
+npx prisma migrate dev --name init # สร้าง Database Tables ครั้งแรก
+npm run dev
+```
 
-- **`index.js`**:
-  - จุดเริ่มต้นของ Server.
-  - เปิด **Socket.io Server** เพื่อรอ Frontend มาเชื่อมต่อ.
-  - เชื่อมต่อ **MQTT Broker** เพื่อดักฟังข้อมูลจากอุปกรณ์.
-  - เมื่อได้ข้อมูล -> สั่ง `io.emit('matrix-data', data)` ส่งไป Frontend ทันที.
-- **`prisma/schema.prisma`**:
-  - โครงสร้าง Database (Postgres).
-  - เพิ่มตาราง `Device` (เก็บชื่อและ Serial Number).
-  - เพิ่มตาราง `DeviceProfile` (เก็บสเปคอุปกรณ์).
-- **`controllers/deviceController.js`**:
-  - จัดการเพิ่ม/ลบ/แก้ไขข้อมูลอุปกรณ์ใน Postgres.
-  - สำคัญ: เช็ค `serial_number` ห้ามซ้ำกัน พราะใช้เป็น Hardware ID.
-- **`controllers/telemetryController.js`**:
-  - เชื่อมต่อ InfluxDB.
-  - ดึงข้อมูลย้อนหลัง (`queryApi`) แล้วแปลงเป็น JSON ให้ Frontend วาดกราฟเส้น.
+_Log ควรขึ้นว่า: `Platform Service running on http://0.0.0.0:4000`_
 
-### 🅱️ Serial Gateway (`omni-back-end/serial-gateway`)
+**จอที่ 2: Start Ingest Service**
 
-โปรแกรมเชื่อมต่อฮาร์ดแวร์ (รันบนเครื่องที่เสียบ Arduino).
+```bash
+cd omni-back-end/ingest-service
+npm install
+node index.js
+```
 
-- **`gateway.js`**:
-  - ใช้ library `serialport` อ่านข้อมูลจาก USB Port (`COM4`).
-  - มี Logic ตัดคำ (Parser): เพราะข้อมูลจาก Arduino อาจมาไม่ครบทีเดียว มันจะรอจนกว่าจะเจอคำว่า `END` ถึงจะถือว่าครบ 1 เฟรมภาพ.
-  - มีระบบ Auto-Reconnect: ถ้าสายหลุด โปรแกรมจะไม่พัง แต่จะรอเสียบใหม่.
-
-### 🆎 Ingest Service (`omni-back-end/ingest-service`)
-
-หน่วยจดบันทึก (Low-Latency Write).
-
-- **`ingestLogic.js`**:
-  - รับข้อมูลจาก MQTT.
-  - เช็คก่อนว่า "อุปกรณ์นี้มีในระบบจริงไหม?" (ป้องกันข้อมูลขยะ).
-  - เขียนลง InfluxDB โดยใช้ `writeApi` (เขียนแบบ Batch เพื่อประสิทธิภาพสูงสุด).
+_Log ควรขึ้นว่า: `🚀 Ingest Service starting...` และ `Connected to MQTT`_
 
 ---
 
-## 🔌 3. API Documentation (REST API)
+## 🔌 API Documentation
 
-Frontend เรียกใช้งานผ่าน URL `http://localhost:4000/api/admin/...` โดยต้องแนบ `Authorization: Bearer <token>` ทุกครั้ง.
+Endpoint ทั้งหมดอยู่ที่ `http://localhost:4000/api`
 
-### 👤 User Management
+### 🔑 1. Authentication (ยืนยันตัวตน)
 
-| Method | Endpoint       | Description                        |
-| :----- | :------------- | :--------------------------------- |
-| `GET`  | `/get-users`   | ดูรายชื่อ User ทั้งหมด             |
-| `POST` | `/create-user` | สร้าง Admin/User ใหม่ (admin only) |
+_ใช้สำหรับ Login เพื่อรับ Token ไปใช้งาน API อื่นๆ_
 
-### 🛠️ Device Management
+| Method | Endpoint         | คำอธิบาย    | Body Parameters                                                                          |
+| :----- | :--------------- | :---------- | :--------------------------------------------------------------------------------------- |
+| `POST` | `/auth/register` | สมัครสมาชิก | `{ "username": "admin", "email": "admin@test.com", "password": "123", "role": "ADMIN" }` |
+| `POST` | `/auth/login`    | เข้าสู่ระบบ | `{ "email": "admin@test.com", "password": "123" }`                                       |
 
-| Method   | Endpoint             | Description                    | params                              |
-| :------- | :------------------- | :----------------------------- | :---------------------------------- |
-| `GET`    | `/get-devices`       | ดูรายการอุปกรณ์ทั้งหมด + สถานะ | -                                   |
-| `POST`   | `/create-device`     | เพิ่มอุปกรณ์ใหม่               | `name`, `serialNumber`, `profileId` |
-| `DELETE` | `/delete-device/:id` | ลบอุปกรณ์                      | `id`                                |
+> **⚠️ หมายเหตุ:** Default Password สำหรับ User ใหม่จะเป็น Hash ที่ปลอดภัย ในช่วง Demo สามารถใช้ `role: "ADMIN"` ได้เลย ระบบจะ auto-create Role ให้ถ้ายังไม่มี
 
-### 📈 Telemetry (History)
+### 👥 2. User & Admin Management
 
-| Method | Endpoint             | Description           | params                   |
-| :----- | :------------------- | :-------------------- | :----------------------- |
-| `GET`  | `/get-telemetry/:id` | ดึงข้อมูลกราฟย้อนหลัง | `id` (ใช้ Serial Number) |
+_ต้องแนบ Header `Authorization: Bearer <TOKEN>`_
 
-### 📝 Device Profile
+| Method   | Endpoint                 | คำอธิบาย                         |
+| :------- | :----------------------- | :------------------------------- |
+| `GET`    | `/admin/get-users`       | ดูรายชื่อ User ทั้งหมด           |
+| `GET`    | `/admin/get-user/:id`    | ดูรายละเอียด User ตาม ID         |
+| `POST`   | `/admin/create-user`     | สร้าง User ใหม่ (Admin เท่านั้น) |
+| `PUT`    | `/admin/update-user/:id` | แก้ไขข้อมูล User                 |
+| `DELETE` | `/admin/delete-user/:id` | ลบ User                          |
 
-| Method | Endpoint          | Description                                  |
-| :----- | :---------------- | :------------------------------------------- |
-| `GET`  | `/get-profiles`   | ดูรายการ Profile (เช่น Mat 16x16, Sensor v1) |
-| `POST` | `/create-profile` | สร้าง Profile ใหม่ (กำหนด spec ข้อมูล)       |
+### 📟 3. Device Management (จัดการอุปกรณ์)
 
----
+_ใช้สำหรับลงทะเบียนอุปกรณ์และดูสถานะ_
 
----
+| Method   | Endpoint                    | คำอธิบาย                          | Parameters                                                                       |
+| :------- | :-------------------------- | :-------------------------------- | :------------------------------------------------------------------------------- |
+| `GET`    | `/admin/get-devices`        | ดูรายการอุปกรณ์ทั้งหมดในระบบ      | -                                                                                |
+| `POST`   | `/admin/create-device`      | เพิ่มอุปกรณ์ใหม่                  | `{ "device_name": "Mat-01", "profile_id": "uuid...", "serial_number": "SN001" }` |
+| `PUT`    | `/admin/update-device/:id`  | แก้ไขอุปกรณ์                      | `{ "device_name": "NewName" }`                                                   |
+| `DELETE` | `/admin/delete-device/:id`  | ลบอุปกรณ์                         | -                                                                                |
+| `GET`    | `/admin/get-profiles`       | ดูรายการ Profile อุปกรณ์ที่รองรับ | -                                                                                |
+| `POST`   | `/admin/create-profile`     | สร้าง Profile ใหม่ (Advanced)     | `{ "name": "...", "type": "...", "dataFormat": "JSON" }`                         |
+| `PUT`    | `/admin/update-profile/:id` | แก้ไข Profile                     | `{ "name": "NewName" }`                                                          |
 
-## 🔌 4. รายละเอียด Port การใช้งาน (Network & Ports)
-
-ระบบนี้ฟิกซ์ Port การใช้งานไว้ดังนี้ หากต้องการแก้ไขต้องแก้ในไฟล์ `.env` หรือ `index.js` ของแต่ละ Service
-
-| Port     | Service          | Protocol             | การใช้งานจริง                                                                                 |
-| :------- | :--------------- | :------------------- | :-------------------------------------------------------------------------------------------- |
-| **4000** | Platform Service | `HTTP` & `WebSocket` | **Main API:** ใช้ยิง Request จากหน้าเว็บ<br>**Live Stream:** ใช้ส่งภาพ Heatmap ผ่าน Socket.io |
-| **5173** | Frontend (Vite)  | `HTTP`               | **Web Server:** สำหรับรันหน้าเว็บ React ระหว่างพัฒนา (Dev Mode)                               |
-| **1883** | Mosquitto        | `MQTT`               | **Message Broker:** ทางด่วนข้อมูลระหว่าง Arduino -> Server (ห้ามเปลี่ยน)                      |
-| **5432** | Postgres         | `TCP`                | **Database:** เก็บข้อมูล User, Device, Profile                                                |
-| **8086** | InfluxDB         | `HTTP`               | **Time-Series DB:** เก็บกราฟข้อมูล Sensor ย้อนหลัง                                            |
-| **COM4** | Serial Port      | `UART`               | **USB Serial:** พอร์ตที่ใช้เชื่อมต่อกับ Arduino (บน Windows)                                  |
-
-> **Note:** ตรวจสอบให้แน่ใจว่าไม่มีโปรแกรมอื่นแย่งใช้ Port 4000 หรือ 1883 ไม่งั้นระบบจะ Start ไม่ขึ้น
+> **💡 Note:** การสร้าง Device จำเป็นต้องเลือก **Device Profile** (เช่น `pressure_mat_32x32` หรือ `dht11_sensor`) เพื่อให้ระบบรู้ว่าจะจัดการข้อมูลอย่างไร
 
 ---
 
-## 🚀 5. วิธีเริ่มใช้งาน (Cheat Sheet)
+## 🛠️ รายละเอียดเพิ่มเติม (Technical Details)
 
-### ลำดับการรันที่ถูกต้อง:
+### 📌 Database Schema (Postgres)
 
-1.  **Start Database:** `docker-compose up -d` (Postgres, InfluxDB, MQTT).
-2.  **Start Platform Service:** `npm run dev` (Port 4000).
-3.  **Start Ingest Service:** `node index.js`.
-4.  **Connect Arduino:** เสียบสายที่ COM4.
-5.  **Start Gateway:** `node gateway.js`.
-6.  **Start Frontend:** `npm run dev` (Port 5173).
+- **User**: เก็บข้อมูลผู้ใช้, Role, Password Hash
+- **Role**: สิทธิ์การใช้งาน (ADMIN, OPERATOR, USER)
+- **Device**: เก็บรายชื่ออุปกรณ์และ Serial Number
+- **DeviceProfile**: แม่แบบของอุปกรณ์ (บอกว่าอุปกรณ์นี้ส่งข้อมูลแบบไหน)
+- **Session**: (Optional) เก็บประวัติการใช้งานอุปกรณ์เป็นรอบๆ
 
-เมื่อรันครบทุกตัว:
+### 📌 Real-time Communication
 
-- เปิดหน้าเว็บ -> ไปที่เมนู **Device Inventory** -> สร้างอุปกรณ์ใหม่ ใส่ ID `MAT_001` (หรือตามโค้ด Arduino).
-- ไปที่เมนู **Live Monitor** -> จะเห็นภาพ Heatmap ขึ้นมาทันที!
+ระบบใช้ **MQTT** เป็น Pipeline หลักในการส่งข้อมูล:
 
----
+1.  Device ส่งค่าเข้า Topic: `iot/<device_id>/telemetry`
+2.  Platform Service จะ Subscribe Topic นี้ และ Forward ข้อมูลผ่าน **Socket.IO** ไปยังหน้าเว็บ
+3.  Frontend รอรับ Event `sensor-data` หรือ `matrix-data` เพื่อวาดกราฟทันที
 
----
+### ⚠️ Demo Configuration Note
 
-## 🔍 5. รายละเอียดเชิงลึก: การทำงานของแต่ละไฟล์ (Deep Dive)
+สำหรับการนำเสนอ (Demo) ครั้งนี้:
 
-### 📂 Backend Files (`omni-back-end/platform-service`)
-
-#### `controllers/deviceController.js`
-
-ทำหน้าที่จัดการข้อมูลอุปกรณ์ในฐานข้อมูล Postgres
-
-- **`createDevice`**:
-  - รับค่า: `name`, `serialNumber`, `profileId`
-  - Logic: ตรวจสอบว่า `serialNumber` นี้มีอยู่ในระบบหรือยัง ถ้ายังให้สร้างใหม่ ถ้ามีแล้วให้แจ้ง Error
-  - ความสำคัญ: `serialNumber` คือกุญแจสำคัญที่ใช้ผูกกับ Hardware จริง
-- **`getAllDevices`**:
-  - ดึงข้อมูลอุปกรณ์ทั้งหมด พร้อมกับเช็คสถานะ Online/Offline (mock logic หรือเช็คจาก last_seen ในอนาคต)
-
-#### `controllers/telemetryController.js`
-
-ท่อเชื่อมต่อไปยัง InfluxDB เพื่อดึงข้อมูล Sensor
-
-- **`getDeviceTelemetry`**:
-  - รับค่า: `deviceId` (ซึ่งเราใช้ Serial Number แทน ID)
-  - Logic: ใช้ InfluxQL Query ข้อมูลล่าสุด 50-100 จุด เพื่อส่งให้ Frontend วาดกราฟย้อนหลัง
-  - การแปลงข้อมูล: ข้อมูลจาก Influx จะมาในรูปแบบ Array ของ Object เราต้องแปลงให้เป็น JSON ที่ Frontend เข้าใจง่ายๆ
-
-#### `controllers/deviceProfileController.js`
-
-จัดการ "สเปค" ของอุปกรณ์ (Template)
-
-- **หน้าที่**: บอกระบบว่าอุปกรณ์นี้คือ "Matrix 16x16" หรือ "Temperature Sensor"
-- **สำคัญยังไง**: Ingest Service จะใช้ Profile นี้ในการตัดสินใจว่าจะบันทึกข้อมูลท่าไหน (เช่น บันทึกเป็น JSON Blob หรือ Int)
+- ระบบ **Role Authentication** บางส่วนถูกปิดไว้ (`// Removed requireRole('ADMIN')`) เพื่อความสะดวกในการทดสอบ API
+- การสร้าง User และ Device สามารถทำได้โดยไม่ต้องเป็น Admin
+- ข้อมูล Password ถูก Hash ด้วย `bcrypt` เพื่อความปลอดภัยตามมาตรฐาน
 
 ---
 
-## 🔐 6. Authentication Flows
-
-ระบบใช้ JWT (JSON Web Token) ในการยืนยันตัวตน
-
-1.  **Login**: User ส่ง username/password -> Server คืนค่า `token`
-2.  **Access API**: Frontend ต้องแนบ `Authorization: Bearer <token>` ในทุก Request Header
-3.  **Middleware (`authMiddleware.js`)**: จะดักจับทุก Request เพื่อเช็คว่า Token ถูกต้องไหม และเป็น Role อะไร (Admin/User)
-
----
-
-## 🔄 7. Data Flow Scenario: "เมื่อมีคนเหยียบแผ่นยาง"
-
-1.  **Hardware**: Arduino อ่านค่าแรงกด -> ส่ง Serial `TABLE ... 1023 ... END`
-2.  **Gateway**: `gateway.js` (Laptop เชื่อม USB) อ่านเจอคำว่า `TABLE` -> เก็บข้อมูลจนเจอ `END` -> แปลงเป็น JSON `[[0,0...],[...]]` -> ส่ง MQTT `iot/matrix/stream`
-3.  **Backend (Real-time)**: `index.js` รับ MQTT -> ยิง Socket.io `emit('matrix-data')` -> หน้าเว็บ `liveMonitor.jsx` รับไปแสดงผล (สีแดง) ทันที
-4.  **Backend (Storage)**: `ingestLogic.js` รับ MQTT -> ดูว่า Serial `MAT_001` คือใคร -> บันทึกลง InfluxDB
-
----
-
-จัดทำโดย: **Omni Team** 🚀
+👨‍💻 **Developed by Omni Project Team**
+ขอให้การนำเสนอผ่านไปด้วยดีครับ!
