@@ -16,6 +16,9 @@ export const useDashboard = () => {
         description: ""
     });
 
+    // Edit Profile State
+    const [editingProfileId, setEditingProfileId] = useState(null);
+
     const fetchDashboardData = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -91,6 +94,27 @@ export const useDashboard = () => {
         }
     };
 
+    const handleEditProfile = (profile) => {
+        setEditingProfileId(profile.id);
+        setNewProfileData({
+            profile_id: profile.profile_id,
+            name: profile.name,
+            type: profile.type || "32x32 Grid",
+            dataFormat: profile.dataFormat || "",
+            description: profile.description || ""
+        });
+        setShowCreateProfile(true);
+    };
+
+    const handleUpdateProfile = async () => {
+        // Placeholder for update logic
+        console.log("Updating profile", editingProfileId, newProfileData);
+        alert("Update functionality coming soon!");
+        setShowCreateProfile(false);
+        setNewProfileData({ profile_id: "", name: "", type: "32x32 Grid", dataFormat: "", description: "" });
+        setEditingProfileId(null);
+    };
+
     return {
         profiles,
         stats,
@@ -100,6 +124,11 @@ export const useDashboard = () => {
         newProfileData,
         setNewProfileData,
         fetchDashboardData,
-        handleCreateProfile
+        fetchDashboardData,
+        handleCreateProfile,
+        editingProfileId,
+        setEditingProfileId, // Exported in case we need to clear it directly
+        handleEditProfile,
+        handleUpdateProfile
     };
 };

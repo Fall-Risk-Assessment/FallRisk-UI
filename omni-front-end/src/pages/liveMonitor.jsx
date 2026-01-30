@@ -260,7 +260,7 @@ export const LiveMonitor = () => {
       <div className="monitor-grid monitor-flex-row">
         <Card
           className="monitor-column"
-          title="HEATMAP (16x16)"
+          title="HEATMAP (32x32)"
           headerAction={
             <div className="flex-gap-10" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Button
@@ -286,7 +286,7 @@ export const LiveMonitor = () => {
           </div>
 
           <div className="heatmap-container heatmap-grid-32">
-            <div className="heatmap-container heatmap-grid">
+            <div className="heatmap-container heatmap-grid-32">
               {matrixData.map((row, rIndex) => (
                 row.map((val, cIndex) => (
                   <div

@@ -9,17 +9,51 @@ import { Card } from "../components/common/Card";
 import { useDashboard } from "../hooks/useDashboard.jsx";
 
 // Helper Component: Profile Card
-const ProfileCard = ({ profile, navigate }) => {
+const ProfileCard = ({ profile, navigate, onEdit }) => {
   return (
     <Card
       className="device-card"
-      headerAction={
+      style={{ position: 'relative' }}
+      title={profile.name || "\u00A0"}
+    >
+      <div style={{
+        position: 'absolute',
+        top: '12px',
+        right: '16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        zIndex: 10
+      }}>
         <span className="status-badge online" style={{ fontSize: '10px', padding: '2px 6px' }}>
           PROFILE
         </span>
-      }
-      title={profile.name}
-    >
+        <Button
+          className="btn-edit-action"
+          variant="ghost"
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(profile);
+          }}
+          style={{
+            padding: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minWidth: 'auto',
+            border: 'none',
+            backgroundColor: 'transparent',
+            color: '#666',
+            cursor: 'pointer'
+          }}
+          title="Edit Profile"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+        </Button>
+      </div>
       <div className="profile-info-container">
         <div className="profile-id-row">
           <span className="font-medium">ID:</span> {profile.profile_id}
@@ -58,7 +92,10 @@ export const Dashboard = () => {
     newProfileData,
     setNewProfileData,
     fetchDashboardData,
-    handleCreateProfile
+    handleCreateProfile,
+    editingProfileId,
+    handleEditProfile,
+    handleUpdateProfile
   } = useDashboard();
 
   const statCards = [
@@ -103,7 +140,7 @@ export const Dashboard = () => {
       <div className="card-grid">
         {profiles.length > 0 ? (
           profiles.map((prof) => (
-            <ProfileCard key={prof.id} profile={prof} navigate={navigate} />
+            <ProfileCard key={prof.id} profile={prof} navigate={navigate} onEdit={handleEditProfile} />
           ))
         ) : (
           <div className="empty-state-message">
@@ -116,10 +153,12 @@ export const Dashboard = () => {
       <Modal
         isOpen={showCreateProfile}
         onClose={() => setShowCreateProfile(false)}
-        title="New Device Profile"
+        title={editingProfileId ? "Edit Profile" : "New Device Profile"}
         footer={
           <>
-            <Button className="btn-create" onClick={handleCreateProfile}>Create</Button>
+            <Button className="btn-create" onClick={editingProfileId ? handleUpdateProfile : handleCreateProfile}>
+              {editingProfileId ? "Update Profile" : "Create"}
+            </Button>
             <Button className="btn-cancel" onClick={() => setShowCreateProfile(false)} variant="secondary">Cancel</Button>
           </>
         }
@@ -132,6 +171,7 @@ export const Dashboard = () => {
               placeholder="e.g., ultrasonic_sensor"
               value={newProfileData.profile_id}
               onChange={(e) => setNewProfileData({ ...newProfileData, profile_id: e.target.value })}
+              disabled={!!editingProfileId}
             />
           </div>
           <div style={{ flex: 1 }}>

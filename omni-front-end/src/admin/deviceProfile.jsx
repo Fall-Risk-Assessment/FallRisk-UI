@@ -44,7 +44,7 @@ export const DeviceProfile = () => {
             <Modal
                 isOpen={showCreateForm}
                 onClose={() => setShowCreateForm(false)}
-                title={editingId ? "Edit Project" : "New Project"}
+                title={editingId ? "Edit Profile" : "New Device Profile"}
                 footer={
                     <>
                         <Button
