@@ -38,6 +38,8 @@ export const ProjectDetails = () => {
         project_name: ""
     });
 
+    const [editingDevice, setEditingDevice] = useState(null);
+
     const fetchProjectData = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -164,6 +166,63 @@ export const ProjectDetails = () => {
         setShowAddModal(true);
     };
 
+    const handleEditDevice = (device) => {
+        console.log("Edit device:", device);
+        setEditingDevice(device);
+        setNewDeviceData({
+            device_name: device.name || "",
+            serial_number: device.serialNumber || "",
+            // Use profileKey from device if available, otherwise try matching via other means
+            profile_id: device.profileKey || (profileList.find(p => p.name === device.type)?.id) || "",
+            project_name: device.projectName || ""
+        });
+        // Ensure profiles are loaded
+        fetchProfiles();
+        setShowAddModal(true);
+    };
+
+    const handleUpdateDevice = async () => {
+        try {
+            if (!newDeviceData.device_name || !newDeviceData.profile_id) {
+                alert("Device Name and Profile are required");
+                return;
+            }
+
+            const payload = {
+                device_name: newDeviceData.device_name,
+                serial_number: newDeviceData.serial_number,
+                profile_id: newDeviceData.profile_id,
+                project_name: newDeviceData.project_name || null,
+                // Status not exposed in form yet, but could be added
+            };
+
+            await api.put(`/admin/update-device/${editingDevice.id}`, payload);
+
+            alert("Device updated successfully!");
+            setShowAddModal(false);
+            setEditingDevice(null);
+            setNewDeviceData({ device_name: "", serial_number: "", profile_id: "", project_name: "" });
+            fetchProjectData(); // Refresh to show changes from backend
+        } catch (error) {
+            console.error("Failed to update device:", error);
+            alert("Failed to update device: " + (error.response?.data?.message || error.message));
+        }
+    };
+
+    const handleDeleteDevice = async (deviceId) => {
+        if (window.confirm("Are you sure you want to delete this device?")) {
+            try {
+                await api.delete(`/admin/delete-device/${deviceId}`);
+                // Remove locally to be snappy
+                setProjectDevices(prev => prev.filter(d => d.id !== deviceId));
+                // fetchProjectData(); // Optional: ensure sync
+            } catch (error) {
+                console.error("Failed to delete device:", error);
+                alert("Failed to delete device: " + (error.response?.data?.message || error.message));
+            }
+        }
+    };
+
     return (
         <div className="project-details-container">
             <div className="project-header">
@@ -203,21 +262,29 @@ export const ProjectDetails = () => {
                 </Button>
             </div>
 
-            {/* Add Device Modal */}
+            {/* Add/Edit Device Modal */}
             <Modal
                 isOpen={showAddModal}
-                onClose={() => setShowAddModal(false)}
-                title="New Device"
+                onClose={() => {
+                    setShowAddModal(false);
+                    setEditingDevice(null);
+                    setNewDeviceData({ device_name: "", serial_number: "", profile_id: "", project_name: "" });
+                }}
+                title={editingDevice ? "Edit Device" : "New Device"}
                 footer={
                     <>
                         <Button
-                            onClick={handleAddDevice}
+                            onClick={editingDevice ? handleUpdateDevice : handleAddDevice}
                             className="btn-submit"
                         >
-                            Create Device
+                            {editingDevice ? "Update Device" : "Create Device"}
                         </Button>
                         <Button
-                            onClick={() => setShowAddModal(false)}
+                            onClick={() => {
+                                setShowAddModal(false);
+                                setEditingDevice(null);
+                                setNewDeviceData({ device_name: "", serial_number: "", profile_id: "", project_name: "" });
+                            }}
                             className="btn-cancel"
                             variant="secondary"
                         >
@@ -278,9 +345,39 @@ export const ProjectDetails = () => {
                             title={device.name}
                             titleClassName="device-name"
                             headerAction={
-                                <div className={`status-badge ${device.isOnline ? 'online' : 'offline'}`}
-                                    style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '12px', backgroundColor: device.isOnline ? '#dcfce7' : '#f3f4f6', color: device.isOnline ? '#166534' : '#6b7280' }}>
-                                    {device.isOnline ? 'ONLINE' : 'OFFLINE'}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <div className={`status-badge ${device.isOnline ? 'online' : 'offline'}`}
+                                        style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '12px', backgroundColor: device.isOnline ? '#dcfce7' : '#f3f4f6', color: device.isOnline ? '#166534' : '#6b7280' }}>
+                                        {device.isOnline ? 'ONLINE' : 'OFFLINE'}
+                                    </div>
+                                    <Button
+                                        className="profile-card-action-btn"
+                                        variant="ghost"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleEditDevice(device);
+                                        }}
+                                        title="Edit Device"
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                        </svg>
+                                    </Button>
+                                    <Button
+                                        className="profile-card-action-btn"
+                                        variant="ghost"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteDevice(device.id);
+                                        }}
+                                        title="Delete Device"
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        </svg>
+                                    </Button>
                                 </div>
                             }
                         >
