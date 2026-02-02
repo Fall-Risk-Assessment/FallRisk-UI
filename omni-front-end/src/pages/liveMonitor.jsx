@@ -38,6 +38,9 @@ export const LiveMonitor = () => {
   const dataBufferRef = useRef([]);
   const [intervalStats, setIntervalStats] = useState({ min: 0, max: 0, avg: 0 });
 
+  // Dynamic Mode based on incoming data
+  const [dataMode, setDataMode] = useState(null); // 'MATRIX' | 'SENSOR' | null
+
   // Ref for Selected Device to be accessible in Socket Callback
   const selectedDeviceRef = useRef(null);
 
@@ -59,13 +62,26 @@ export const LiveMonitor = () => {
     return () => clearInterval(watchdog);
   }, [lastRxTime, isConnected]);
 
+  // Helper: Determine Device Mode (Matrix vs Sensor)
+  const getDeviceMode = (device) => {
+    if (!device) return 'UNKNOWN';
+    // Check type or name for "Matrix" or "Grid"
+    const type = (device.type || "").toLowerCase();
+    const name = (device.name || "").toLowerCase();
+    if (type.includes('matrix') || type.includes('grid') || name.includes('matrix') || name.includes('grid')) {
+      return 'MATRIX';
+    }
+    // Default to Sensor
+    return 'SENSOR';
+  };
+
   // Socket Connection for Matrix
   useEffect(() => {
     const socket = io("http://localhost:4000"); // Updated to match backend PORT 4000
 
     socket.on("connect", () => {
-      console.log("Connected to Live Stream");
-      setIsConnected(true);
+      console.log("Connected to Socket Server");
+      // Do NOT set isConnected(true) here. Wait for data.
     });
 
     socket.on("matrix-data", (payload) => {
@@ -75,6 +91,7 @@ export const LiveMonitor = () => {
         setPacketCount(prev => prev + 1);
         setLastRxTime(new Date());
         setIsConnected(true);
+        setDataMode('MATRIX');
       }
     });
 
@@ -94,6 +111,7 @@ export const LiveMonitor = () => {
 
       console.log("⚡ Sensor Data:", data);
       setIsConnected(true); // Valid data received
+      setDataMode('SENSOR');
       setLastRxTime(new Date());
 
       // 1. Update Graph & Display
@@ -254,63 +272,128 @@ export const LiveMonitor = () => {
     )
   }
 
+
+
+  // --- WAITING FOR CONNECTION UI ---
+  if (!isConnected) {
+    return (
+      <div className="live-monitor-wrapper monitor-wrapper monitor-wrapper--empty">
+        <div className="empty-state-card">
+          <div className="loader-spinner" style={{ marginBottom: '20px' }}></div>
+          <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#374151', marginBottom: '8px' }}>
+            {selectedDevice ? `Waiting for ${selectedDevice.name}...` : "ไม่พบการเชื่อมต่อ device"}
+          </h2>
+          {!selectedDevice && (
+            <p style={{ color: '#6b7280' }}>กรุณาเลือกอุปกรณ์หรือตรวจสอบการเชื่อมต่อ</p>
+          )}
+          {selectedDevice && (
+            <p style={{ color: '#9ca3af', fontSize: '14px' }}>
+              Listening for data stream...
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // --- VIEW MODE RENDER ---
+  const activeViewMode = dataMode || getDeviceMode(selectedDevice);
+
+  // --- MATRIX MODE VIEW ---
+  if (activeViewMode === 'MATRIX') {
+    return (
+      <div className="live-monitor-wrapper monitor-wrapper">
+        <h1>Live Monitor: {selectedDevice ? selectedDevice.name : "Unknown"}</h1>
+        <div className="monitor-grid monitor-flex-row">
+          <Card
+            className="monitor-column"
+            title="HEATMAP (32x32)"
+            headerAction={
+              <div className="flex-gap-10" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Button
+                  onClick={handleCalibrate}
+                  disabled={!isConnected}
+                  className="btn-calibrate"
+                  variant="primary"
+                  style={{ padding: '4px 12px', fontSize: '12px' }}
+                >
+                  CALIBRATE
+                </Button>
+                <span className={`status-indicator ${isConnected ? 'status-live' : 'status-disconnected'}`} style={{ color: isConnected ? '#16a34a' : '#dc2626', fontWeight: 'bold' }}>
+                  ● {isConnected ? 'LIVE' : 'DISCONNECTED'}
+                </span>
+              </div>
+            }
+          >
+            <div className="monitor-stats-bar">
+              Max: {matrixData.length ? Math.max(...matrixData.flat()) : 0} |
+              Min: {matrixData.length ? Math.min(...matrixData.flat()) : 0} |
+              Pkts: {packetCount} |
+              Last: {lastRxTime ? lastRxTime.toLocaleTimeString() : "Waiting..."}
+            </div>
+
+            <div className="heatmap-container heatmap-grid-32">
+              <div className="heatmap-container heatmap-grid-32">
+                {matrixData.map((row, rIndex) => (
+                  row.map((val, cIndex) => (
+                    <div
+                      key={`${rIndex}-${cIndex}`}
+                      className="heatmap-cell"
+                      style={{
+                        backgroundColor: getCellColor(val, rIndex, cIndex),
+                      }}
+                      title={`R${rIndex} C${cIndex}: ${val}`}
+                    />
+                  ))
+                ))}
+              </div>
+            </div>
+          </Card>
+
+          <Card className="monitor-column" title="AI Predict Skeleton">
+            <div className="skeleton-box flex-1">
+              <div className="skeleton-message">
+                Waiting for Camera Feed...
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Current Pose */}
+        <Card className="card-pose" title="CURRENT POSE" titleClassName="pose-section-header">
+          <h2 className="pose-title">
+            {/* Mock Logic for Pose based on max value for demo */}
+            {matrixData.length && Math.max(...matrixData.flat()) > 300 ? "Cobra Pose" : "Tree Pose"}
+          </h2>
+          <div className="confidence-section">
+            <div className="confidence-header">
+              <span>AI Confidence</span>
+              <span>{isConnected ? "92%" : "0%"}</span>
+            </div>
+            <div className="confidence-track">
+              <div className="confidence-fill" style={{ width: isConnected ? '92%' : '0%' }}></div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Navigation Button */}
+        <div className="session-nav-container">
+          <Button
+            className="btn-session"
+            onClick={() => window.location.href = '/sessions'}
+          >
+            Sessions
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // --- SENSOR MODE VIEW (Default) ---
   return (
     <div className="live-monitor-wrapper monitor-wrapper">
-      <h1>Live Monitor</h1>
-      <div className="monitor-grid monitor-flex-row">
-        <Card
-          className="monitor-column"
-          title="HEATMAP (32x32)"
-          headerAction={
-            <div className="flex-gap-10" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Button
-                onClick={handleCalibrate}
-                disabled={!isConnected}
-                className="btn-calibrate"
-                variant="primary"
-                style={{ padding: '4px 12px', fontSize: '12px' }}
-              >
-                CALIBRATE
-              </Button>
-              <span className={`status-indicator ${isConnected ? 'status-live' : 'status-disconnected'}`} style={{ color: isConnected ? '#16a34a' : '#dc2626', fontWeight: 'bold' }}>
-                ● {isConnected ? 'LIVE' : 'DISCONNECTED'}
-              </span>
-            </div>
-          }
-        >
-          <div className="monitor-stats-bar">
-            Max: {matrixData.length ? Math.max(...matrixData.flat()) : 0} |
-            Min: {matrixData.length ? Math.min(...matrixData.flat()) : 0} |
-            Pkts: {packetCount} |
-            Last: {lastRxTime ? lastRxTime.toLocaleTimeString() : "Waiting..."}
-          </div>
+      <h1>Live Monitor: {selectedDevice ? selectedDevice.name : "Unknown"}</h1>
 
-          <div className="heatmap-container heatmap-grid-32">
-            <div className="heatmap-container heatmap-grid-32">
-              {matrixData.map((row, rIndex) => (
-                row.map((val, cIndex) => (
-                  <div
-                    key={`${rIndex}-${cIndex}`}
-                    className="heatmap-cell"
-                    style={{
-                      backgroundColor: getCellColor(val, rIndex, cIndex),
-                    }}
-                    title={`R${rIndex} C${cIndex}: ${val}`}
-                  />
-                ))
-              ))}
-            </div>
-          </div>
-        </Card>
-
-        <Card className="monitor-column" title="AI Predict Skeleton">
-          <div className="skeleton-box flex-1">
-            <div className="skeleton-message">
-              Waiting for Camera Feed...
-            </div>
-          </div>
-        </Card>
-      </div>
 
       <Card
         className="card-current-pose"
@@ -483,21 +566,7 @@ export const LiveMonitor = () => {
         </div>
       </Card>
 
-      {/* Current Pose */}
-      <Card className="card-pose" title="CURRENT POSE" titleClassName="pose-section-header">
-        <h2 className="pose-title">
-          {telemetryData.length > 0 && telemetryData[telemetryData.length - 1].value < 20 ? "Cobra Pose" : "Tree Pose"}
-        </h2>
-        <div className="confidence-section">
-          <div className="confidence-header">
-            <span>AI Confidence</span>
-            <span>{telemetryData.length > 0 ? "92%" : "0%"}</span>
-          </div>
-          <div className="confidence-track">
-            <div className="confidence-fill" style={{ width: telemetryData.length > 0 ? '92%' : '0%' }}></div>
-          </div>
-        </div>
-      </Card>
+      {/* Current Pose Removed for Sensor Mode */}
 
       {/* Navigation Button */}
       <div className="session-nav-container">
