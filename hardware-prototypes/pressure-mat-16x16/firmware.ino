@@ -106,7 +106,8 @@ void setup() {
 
   digitalWrite(SIG_COL1, LOW);
   digitalWrite(SIG_COL2, LOW);
-
+  String DEVICE_ID = "Mat_32_plus"; 
+  String PROFILE_ID = "mat_sensor";
   Serial.println("Press Mat 32x32 Ready");
 }
 

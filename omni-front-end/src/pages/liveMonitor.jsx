@@ -381,7 +381,7 @@ export const LiveMonitor = () => {
           <Button
             className="btn-session"
             onClick={() => window.location.href = '/sessions'}
-          >
+           >
             Sessions
           </Button>
         </div>

@@ -144,7 +144,7 @@ export const useDashboard = () => {
         newProfileData,
         setNewProfileData,
         fetchDashboardData,
-        fetchDashboardData,
+
         handleCreateProfile,
         editingProfileId,
         setEditingProfileId, // Exported in case we need to clear it directly
