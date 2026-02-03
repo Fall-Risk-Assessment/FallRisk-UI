@@ -39,5 +39,6 @@ router.get("/get-device-profiles", deviceProfileController.getAllProfiles); // A
 router.post("/create-session", sessionController.createSession);
 router.put("/end-session/:id", sessionController.endSession);
 router.get("/get-sessions/:deviceId", sessionController.getSessionsByDevice);
+router.get("/get-session/:id", sessionController.getSessionById);
 
 export default router;

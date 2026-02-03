@@ -46,6 +46,7 @@ export const LiveMonitor = () => {
 
   // Ref for Selected Device to be accessible in Socket Callback
   const selectedDeviceRef = useRef(null);
+  const lastDeviceIdRef = useRef(null); // Fallback for ID from stream
 
   // Sync Ref with State
   useEffect(() => {
@@ -114,6 +115,10 @@ export const LiveMonitor = () => {
       if (!currentDevice) return;
 
       console.log("⚡ Sensor Data:", data);
+      
+      if (data.device_id) {
+        lastDeviceIdRef.current = data.device_id;
+      }
 
       // --- CHECK FOR MATRIX DATA OVER TELEMETRY ---
       if (Array.isArray(data.data) && data.data.length > 0) {
@@ -639,8 +644,11 @@ export const LiveMonitor = () => {
                alert("Please stop recording first");
                return;
             }
-            if (selectedDevice) {
-              navigate(`/sessions?deviceId=${selectedDevice.serialNumber}`);
+            // Use selectedDevice or Fallback to last seen ID from stream
+            const targetId = selectedDevice?.serialNumber || lastDeviceIdRef.current;
+            
+            if (targetId) {
+              navigate(`/sessions?deviceId=${targetId}`);
             } else {
               navigate('/sessions');
             }

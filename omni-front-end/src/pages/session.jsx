@@ -19,16 +19,8 @@ export const Sessions = () => {
         // Let's assume deviceId is provided or handle gracefully.
         const idToFetch = deviceId || "all"; 
         
-        let data = [];
-        if (deviceId) {
-             const res = await dashboardService.getSessions(deviceId);
-             data = res.data;
-        } else {
-            // Placeholder: If no device selected, maybe fetch recent sessions from all?
-            // Currently backend only supports getSessionsByDevice nicely.
-            // We'll leave it empty or mock for now if no ID.
-            data = [];
-        }
+        const res = await dashboardService.getSessions(idToFetch);
+        const data = res.data || [];
 
         setSessions(data);
       } catch (error) {
@@ -41,9 +33,7 @@ export const Sessions = () => {
     fetchSessions();
   }, [deviceId]);
 
-  const formatDate = (dateStr) => {
-    return new Date(dateStr).toLocaleString();
-  };
+
 
   const calculateDuration = (start, end) => {
     if (!end) return "Ongoing";
@@ -67,6 +57,7 @@ export const Sessions = () => {
           <thead>
             <tr>
               <th>Date</th>
+              <th>Device</th>
               <th>Start Time</th>
               <th>Duration</th>
               <th>Status</th>
@@ -78,6 +69,9 @@ export const Sessions = () => {
               sessions.map((session) => (
                 <tr key={session.id}>
                   <td>{new Date(session.start_time).toLocaleDateString()}</td>
+                  <td style={{ fontWeight: 500, color: '#2563eb' }}>
+                      {session.device?.device_name || session.device_id}
+                  </td>
                   <td>{new Date(session.start_time).toLocaleTimeString()}</td>
                   <td>{calculateDuration(session.start_time, session.end_time)}</td>
                   <td>
@@ -98,7 +92,7 @@ export const Sessions = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="5" className="text-center">No sessions found {deviceId ? `for this device` : "(Select a device to view sessions)"}</td>
+                <td colSpan="6" className="text-center">No sessions found {deviceId ? `for this device` : "(Global History)"}</td>
               </tr>
             )}
           </tbody>

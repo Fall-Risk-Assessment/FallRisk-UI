@@ -68,22 +68,55 @@ export const endSession = async (req, res) => {
 export const getSessionsByDevice = async (req, res) => {
     try {
         const { deviceId } = req.params;
-        // Need to resolve Serial Number to UUID potentially?
-        // For now assume standard UUID if coming from frontend device object
-        
+        console.log(`[DEBUG] Fetching sessions for deviceId (SN): ${deviceId}`);
+
+        const whereClause = (deviceId === 'all' || !deviceId) ? {} : { 
+            device: {
+                serial_number: deviceId 
+            }
+        };
+
+        console.log(`[DEBUG] Fetching sessions with filter:`, whereClause);
+
         const sessions = await prisma.session.findMany({
-            where: { 
+            where: whereClause,
+            include: {
                 device: {
-                    serial_number: deviceId 
+                    select: { device_name: true, serial_number: true }
                 }
-             },
+            },
             orderBy: { start_time: 'desc' },
             take: 20
         });
 
+        console.log(`[DEBUG] Found ${sessions.length} sessions`);
         res.json(sessions);
     } catch (error) {
          console.error("Get Sessions Error:", error);
          res.status(500).json({ error: error.message });
     }
 }
+
+// Get Single Session
+export const getSessionById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const session = await prisma.session.findUnique({
+            where: { id: id },
+            include: {
+                device: {
+                    select: { device_name: true, serial_number: true }
+                }
+            }
+        });
+
+        if (!session) {
+            return res.status(404).json({ message: "Session not found" });
+        }
+
+        res.json(session);
+    } catch (error) {
+        console.error("Get Session Error:", error);
+        res.status(500).json({ error: error.message });
+    }
+};

@@ -10,4 +10,5 @@ export const dashboardService = {
     startSession: (deviceId, userId) => api.post("/admin/create-session", { device_id: deviceId, user_id: userId }),
     endSession: (sessionId) => api.put(`/admin/end-session/${sessionId}`),
     getSessions: (deviceId) => api.get(`/admin/get-sessions/${deviceId}`),
+    getSession: (id) => api.get(`/admin/get-session/${id}`),
 };
