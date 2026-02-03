@@ -5,4 +5,9 @@ export const dashboardService = {
     getAdminDevices: () => api.get("/admin/get-devices"),
     getTelemetry: (id) => api.get(`/admin/get-telemetry/${id}`),
     createProfile: (data) => api.post("/admin/create-profile", data),
+    
+    // Session Recording
+    startSession: (deviceId, userId) => api.post("/admin/create-session", { device_id: deviceId, user_id: userId }),
+    endSession: (sessionId) => api.put(`/admin/end-session/${sessionId}`),
+    getSessions: (deviceId) => api.get(`/admin/get-sessions/${deviceId}`),
 };
