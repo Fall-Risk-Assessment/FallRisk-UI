@@ -1,28 +1,48 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Added
-import { sessionEvents } from "../mock/data.jsx";
 import "../css/session.css";
 import { Card } from "../components/common/Card";
+import { Button } from "../components/common/Button";
+import { dashboardService } from "../services/dashboardService";
 
 export const SessionDetail = () => {
-  const [selectedEvent, setSelectedEvent] = useState(sessionEvents[0]);
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const res = await dashboardService.getSession(id);
+        setSession(res.data);
+      } catch (error) {
+        console.error("Failed to fetch session", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSession();
+  }, [id]);
+
+  if (loading) return <div className="session-detail-container">Loading...</div>;
+  if (!session) return <div className="session-detail-container">Session not found</div>;
+
+  const calculateDuration = (start, end) => {
+    if (!end) return "Ongoing";
+    const diffMs = new Date(end) - new Date(start);
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffSecs = Math.floor((diffMs % 60000) / 1000);
+    return `${diffMins}m ${diffSecs}s`;
+  };
+
   return (
     <div className="session-detail-container" style={{ padding: '20px', display: 'block' }}>
-       <button 
-        className="btn-back" 
-        onClick={() => navigate(-1)} 
-        style={{ marginBottom: '20px' }}
-      >
-        ← Back
-      </button>
-
       <div className="session-main-content">
         <div style={{ marginBottom: '20px' }}>
           <Button
             className="btn-back-sessions"
-            variant="secondary" // User asked for beauty, secondary usually looks clean, but let's check styles. Primary might be too strong? Let's stick to secondary but adding icon makes it look like a nav button.
+            variant="secondary"
             onClick={() => navigate('/sessions')}
             style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '8px', fontWeight: '500', color: '#4b5563', backgroundColor: 'white', border: '1px solid #e5e7eb', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
           >
@@ -41,7 +61,7 @@ export const SessionDetail = () => {
                 {session.device?.device_name || session.device_id}
               </p>
             </div>
-             <div>
+            <div>
               <p className="info-label">START TIME</p>
               <p className="info-value" style={{ fontSize: '16px' }}>
                 {new Date(session.start_time).toLocaleString()}
@@ -54,7 +74,7 @@ export const SessionDetail = () => {
             <div>
               <p className="info-label">STATUS</p>
               <span className={`status-badge ${session.end_time ? 'completed' : 'active'}`}>
-                 {session.end_time ? "Completed" : "Recording..."}
+                {session.end_time ? "Completed" : "Recording..."}
               </span>
             </div>
           </div>
@@ -62,14 +82,14 @@ export const SessionDetail = () => {
 
         <Card className="timeline-card" title="Recorded Data" titleClassName="info-label">
           <div className="timeline-placeholder">
-             {/* Placeholder for now until generic InfluxDB Graph is implemented */}
-             <div style={{ textAlign: 'center' }}>
-                <p style={{ marginBottom: '10px' }}>📊 Data Playback</p>
-                <p style={{ fontSize: '12px', color: '#666' }}>
-                   Historical data for this session is stored in InfluxDB.<br/>
-                   (Playback Visualization coming soon)
-                </p>
-             </div>
+            {/* Placeholder for now until generic InfluxDB Graph is implemented */}
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ marginBottom: '10px' }}>📊 Data Playback</p>
+              <p style={{ fontSize: '12px', color: '#666' }}>
+                Historical data for this session is stored in InfluxDB.<br />
+                (Playback Visualization coming soon)
+              </p>
+            </div>
           </div>
         </Card>
       </div>

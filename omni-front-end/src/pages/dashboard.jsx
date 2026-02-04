@@ -102,9 +102,38 @@ export const Dashboard = () => {
     handleDeleteProfile
   } = useDashboard();
 
+  /* Metric Cards Data */
   const statCards = [
-    { label: "Device Profiles", value: stats.totalProfiles, color: "#48C9B0" },
-    { label: "Total Devices", value: stats.totalDevices, color: "#3498DB" },
+    {
+      label: "Device Profiles",
+      value: stats.totalProfiles,
+      change: "+2 this week",
+      trendClass: "trend-up",
+      iconClass: "icon-teal",
+      color: "#00b894",
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+          <line x1="8" y1="21" x2="16" y2="21"></line>
+          <line x1="12" y1="17" x2="12" y2="21"></line>
+        </svg>
+      )
+    },
+    {
+      label: "Total Devices",
+      value: stats.totalDevices,
+      change: "Active & Online",
+      trendClass: "trend-neutral",
+      iconClass: "icon-blue",
+      color: "#3498DB",
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+          <circle cx="12" cy="14" r="4"></circle>
+          <line x1="12" y1="6" x2="12.01" y2="6"></line>
+        </svg>
+      )
+    },
   ];
 
   return (
@@ -113,9 +142,15 @@ export const Dashboard = () => {
 
       <div className="dashboard-stats-grid">
         {statCards.map((stat, idx) => (
-          <Card key={idx} className="stat-card" style={{ borderLeft: `4px solid ${stat.color}` }}>
-            <p className="stat-card-label">{stat.label}</p>
-            <h2 className="stat-card-value">{stat.value}</h2>
+          <Card key={idx} className="metric-card" style={{ borderLeft: `5px solid ${stat.color}` }}>
+            <div className={`metric-icon ${stat.iconClass}`}>
+              {stat.icon}
+            </div>
+            <span className="metric-label">{stat.label}</span>
+            <h3 className="metric-value">{stat.value}</h3>
+            <span className={`metric-trend ${stat.trendClass}`}>
+              {stat.change}
+            </span>
           </Card>
         ))}
       </div>

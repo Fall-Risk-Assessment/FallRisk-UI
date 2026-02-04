@@ -13,35 +13,101 @@
 }
 
 /* --- Stats Grid --- */
+/* --- Stats Grid --- */
 .dashboard-stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
   margin-bottom: 32px;
 }
 
-.stat-card {
+.metric-card {
   background: white;
-  border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  /* Softer shadow like projectDetails */
-  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  border: 1px solid #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
   height: 100%;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+  transition: all 0.3s ease;
 }
 
-.stat-card-label {
-  font-size: 14px;
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
+  border-color: #e5e7eb;
+}
+
+.metric-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+/* Icon Colors */
+.icon-teal {
+  background-color: #e0f2f1;
+  color: #00b894;
+}
+
+.icon-blue {
+  background-color: #e0f7fa;
+  color: #0284c7;
+}
+
+.icon-purple {
+  background-color: #f3e5f5;
+  color: #9c27b0;
+}
+
+.icon-indigo {
+  background-color: #e0e7ff;
+  color: #4f46e5;
+}
+
+.icon-green {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+
+
+.metric-label {
   color: #6b7280;
-  margin-bottom: 12px;
+  font-size: 14px;
   font-weight: 500;
 }
 
-.stat-card-value {
-  font-size: 48px;
-  font-weight: 800;
-  margin: 0;
+.metric-value {
+  font-size: 32px;
+  font-weight: 700;
   color: #111827;
+  margin: 4px 0;
+}
+
+.metric-trend {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.trend-up {
+  color: #10b981;
+}
+
+.trend-down {
+  color: #ef4444;
+}
+
+.trend-neutral {
+  color: #6b7280;
 }
 
 /* --- Section Header --- */
