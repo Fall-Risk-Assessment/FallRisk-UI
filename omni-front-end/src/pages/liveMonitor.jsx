@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { dashboardService } from "../services/dashboardService";
 import api from "../api/axios";
 import "../css/liveMonitor.css";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
@@ -20,11 +21,13 @@ const formatTime = (isoString) => {
 
 export const LiveMonitor = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [telemetryData, setTelemetryData] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [matrixData, setMatrixData] = useState(Array(32).fill(Array(32).fill(0)));
   const [isConnected, setIsConnected] = useState(false);
   const [baseline, setBaseline] = useState(null); // Calibration baseline
+  const [activeSessionId, setActiveSessionId] = useState(null); // Session State
 
   const [packetCount, setPacketCount] = useState(0);
   const [lastRxTime, setLastRxTime] = useState(null);
@@ -43,6 +46,7 @@ export const LiveMonitor = () => {
 
   // Ref for Selected Device to be accessible in Socket Callback
   const selectedDeviceRef = useRef(null);
+  const lastDeviceIdRef = useRef(null); // Fallback for ID from stream
 
   // Sync Ref with State
   useEffect(() => {
@@ -68,7 +72,8 @@ export const LiveMonitor = () => {
     // Check type or name for "Matrix" or "Grid"
     const type = (device.type || "").toLowerCase();
     const name = (device.name || "").toLowerCase();
-    if (type.includes('matrix') || type.includes('grid') || name.includes('matrix') || name.includes('grid')) {
+    if (type.includes('matrix') || type.includes('grid') || type.includes('mat') || 
+        name.includes('matrix') || name.includes('grid') || name.includes('mat')) {
       return 'MATRIX';
     }
     // Default to Sensor
@@ -110,6 +115,21 @@ export const LiveMonitor = () => {
       if (!currentDevice) return;
 
       console.log("⚡ Sensor Data:", data);
+      
+      if (data.device_id) {
+        lastDeviceIdRef.current = data.device_id;
+      }
+
+      // --- CHECK FOR MATRIX DATA OVER TELEMETRY ---
+      if (Array.isArray(data.data) && data.data.length > 0) {
+        setMatrixData(data.data);
+        setPacketCount(prev => prev + 1);
+        setLastRxTime(new Date());
+        setIsConnected(true);
+        setDataMode('MATRIX');
+        return; // Stop processing as scalar sensor data
+      }
+
       setIsConnected(true); // Valid data received
       setDataMode('SENSOR');
       setLastRxTime(new Date());
@@ -245,6 +265,36 @@ export const LiveMonitor = () => {
     }
   };
 
+  // --- SESSION LOGIC ---
+  const handleToggleSession = async () => {
+    if (activeSessionId) {
+      // STOP Recording
+      try {
+        await dashboardService.endSession(activeSessionId);
+        setActiveSessionId(null);
+        alert("Session Ended & Saved!");
+      } catch (e) {
+        console.error("End session error", e);
+        alert("Failed to save session");
+      }
+    } else {
+      // START Recording
+      if (!selectedDevice) return;
+      try {
+        // Mock User ID for Demo, in real app get from Auth Context
+        const user = JSON.parse(localStorage.getItem('user')); 
+        const userId = user ? user.id : null; 
+
+        const { data } = await dashboardService.startSession(selectedDevice.id, userId);
+        setActiveSessionId(data.id);
+        alert("Recording Started!");
+      } catch (e) {
+        console.error("Start session error", e);
+        alert("Failed to start session");
+      }
+    }
+  };
+
   // --- NO PROFILE SELECTED UI ---
   const profileId = searchParams.get('profile');
   if (!profileId) {
@@ -342,6 +392,23 @@ export const LiveMonitor = () => {
                 >
                   CALIBRATE
                 </Button>
+                
+                 {/* SESSION REC BUTTON */}
+                 <Button
+                  onClick={handleToggleSession}
+                  disabled={!isConnected}
+                  className={activeSessionId ? "btn-stop-rec" : "btn-start-rec"}
+                  style={{ 
+                    padding: '4px 12px', 
+                    fontSize: '12px',
+                    backgroundColor: activeSessionId ? '#ef4444' : '#2563eb',
+                    color: 'white',
+                    border: 'none'
+                  }}
+                >
+                  {activeSessionId ? "⏹ STOP REC" : "⏺ START REC"}
+                </Button>
+
                 <span className={`status-indicator ${isConnected ? 'status-live' : 'status-disconnected'}`} style={{ color: isConnected ? '#16a34a' : '#dc2626', fontWeight: 'bold' }}>
                   ● {isConnected ? 'LIVE' : 'DISCONNECTED'}
                 </span>
@@ -404,7 +471,7 @@ export const LiveMonitor = () => {
           <Button
             className="btn-session"
             onClick={() => window.location.href = '/sessions'}
-          >
+           >
             Sessions
           </Button>
         </div>
@@ -595,7 +662,20 @@ export const LiveMonitor = () => {
       <div className="session-nav-container">
         <Button
           className="btn-session"
-          onClick={() => window.location.href = '/sessions'}
+          onClick={() => {
+            if (activeSessionId) {
+               alert("Please stop recording first");
+               return;
+            }
+            // Use selectedDevice or Fallback to last seen ID from stream
+            const targetId = selectedDevice?.serialNumber || lastDeviceIdRef.current;
+            
+            if (targetId) {
+              navigate(`/sessions?deviceId=${targetId}`);
+            } else {
+              navigate('/sessions');
+            }
+          }}
         >
           Sessions
         </Button>

@@ -3,6 +3,7 @@ import * as deviceController from "../controllers/deviceController.js";
 import * as adminController from "../controllers/adminController.js";
 import * as deviceProfileController from "../controllers/deviceProfileController.js";
 import * as telemetryController from "../controllers/telemetryController.js";
+import * as sessionController from "../controllers/sessionController.js";
 import { authenticateToken, requireRole } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -33,5 +34,11 @@ router.put("/update-profile/:id", deviceProfileController.updateProfile); // NEW
 router.get("/get-profiles", deviceProfileController.getAllProfiles);
 router.delete("/delete-profile/:id", deviceProfileController.deleteProfile); // Removed requireRole('ADMIN') for Demo
 router.get("/get-device-profiles", deviceProfileController.getAllProfiles); // Alias/Update existing usage
+
+// Session Management
+router.post("/create-session", sessionController.createSession);
+router.put("/end-session/:id", sessionController.endSession);
+router.get("/get-sessions/:deviceId", sessionController.getSessionsByDevice);
+router.get("/get-session/:id", sessionController.getSessionById);
 
 export default router;

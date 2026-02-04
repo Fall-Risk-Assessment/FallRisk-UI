@@ -1,33 +1,22 @@
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // Added
 import { sessionEvents } from "../mock/data.jsx";
 import "../css/session.css";
-// import "../css/sessionDetail.css"; // Removing missing file import
 import { Card } from "../components/common/Card";
-import { Button } from "../components/common/Button"; // Added
 
 export const SessionDetail = () => {
-  const navigate = useNavigate(); // Added
   const [selectedEvent, setSelectedEvent] = useState(sessionEvents[0]);
   return (
-    <div className="session-detail-container">
-      <div className="session-list-sidebar">
-        <div className="session-list-header">Session List</div>
-        <div className="session-list-content">
-          {sessionEvents.map((event) => (
-            <div
-              key={event.id}
-              className={`session-list-item ${selectedEvent.id === event.id ? "selected" : ""}`}
-              onClick={() => setSelectedEvent(event)}
-            >
-              <div className="session-time-text">{event.time}</div>
-              <div className="session-list-current-pose">
-                Pose: <span className="session-pose-label">{event.pose}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+    <div className="session-detail-container" style={{ padding: '20px', display: 'block' }}>
+       <button 
+        className="btn-back" 
+        onClick={() => navigate(-1)} 
+        style={{ marginBottom: '20px' }}
+      >
+        ← Back
+      </button>
 
       <div className="session-main-content">
         <div style={{ marginBottom: '20px' }}>
@@ -47,144 +36,40 @@ export const SessionDetail = () => {
         <Card title="Session Details">
           <div className="session-info-row">
             <div>
-              <p className="info-label">DURATION</p>
-              <p className="info-value">{selectedEvent.duration}</p>
+              <p className="info-label">DEVICE</p>
+              <p className="info-value" style={{ color: '#2563eb' }}>
+                {session.device?.device_name || session.device_id}
+              </p>
+            </div>
+             <div>
+              <p className="info-label">START TIME</p>
+              <p className="info-value" style={{ fontSize: '16px' }}>
+                {new Date(session.start_time).toLocaleString()}
+              </p>
             </div>
             <div>
-              <p className="info-label">DEVICE</p>
-              <p className="info-value">Yoga Mat #01</p>
+              <p className="info-label">DURATION</p>
+              <p className="info-value">{calculateDuration(session.start_time, session.end_time)}</p>
             </div>
-          </div>
-
-          <div className="pose-breakdown-section">
-            <p className="info-label mb-8">POSE AI Predict</p>
-            <div className="pose-breakdown-list">
-              <div className="pose-breakdown-item">
-                <span className="pose-name">Tree Pose</span>
-                <div className="pose-bar-track">
-                  <div className="pose-bar-fill" style={{ width: `${selectedEvent.accuracy.tree}%` }}></div>
-                </div>
-                <span>{selectedEvent.accuracy.tree}%</span>
-              </div>
-              <div className="pose-breakdown-item">
-                <span className="pose-name">Warrior</span>
-                <div className="pose-bar-track">
-                  <div className="pose-bar-fill" style={{ width: `${selectedEvent.accuracy.warrior}%` }}></div>
-                </div>
-                <span>{selectedEvent.accuracy.warrior}%</span>
-              </div>
+            <div>
+              <p className="info-label">STATUS</p>
+              <span className={`status-badge ${session.end_time ? 'completed' : 'active'}`}>
+                 {session.end_time ? "Completed" : "Recording..."}
+              </span>
             </div>
           </div>
         </Card>
 
-        <Card className="timeline-card" title="TIMELINE PLAYBACK" titleClassName="info-label">
+        <Card className="timeline-card" title="Recorded Data" titleClassName="info-label">
           <div className="timeline-placeholder">
-            [ Signal Graph Placeholder for {selectedEvent.pose} ]
-          </div>
-        </Card>
-
-        <Card className="pose-stats-card" title="Pose Statistics">
-          <div className="pose-stats-container">
-            {/* Chart Section */}
-            <div className="chart-container">
-              <div className="y-axis-label">Duration</div>
-              <div className="y-axis">
-                <span>800</span>
-                <span>400</span>
-                <span>200</span>
-                <span>0</span>
-              </div>
-              <div className="chart-area">
-                <div className="x-grid-lines">
-                  <div className="grid-line"></div>
-                  <div className="grid-line"></div>
-                  <div className="grid-line"></div>
-                  <div className="grid-line-base"></div>
-                </div>
-
-                <div className="bar-group-container">
-                  <div className="bar-group">
-                    <div className="bar primary" style={{ height: "100%" }} title="720s"></div>
-                    <div className="bar secondary" style={{ height: "1px" }}></div>
-                    <div className="x-label">Downward Dog</div>
-                  </div>
-
-                  <div className="bar-group">
-                    <div className="bar primary" style={{ height: "80%" }} title="600s"></div>
-                    <div className="bar secondary" style={{ height: "1px" }}></div>
-                    <div className="x-label">Tree Pose</div>
-                  </div>
-
-                  <div className="bar-group">
-                    <div className="bar primary" style={{ height: "60%" }} title="450s"></div>
-                    <div className="bar secondary" style={{ height: "1px" }}></div>
-                    <div className="x-label">Warrior Pose</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="chart-legend">
-              <div className="legend-item">
-                <div className="legend-color primary"></div>
-                <span>Time (seconds)</span>
-              </div>
-              <div className="legend-item">
-                <div className="legend-color secondary"></div>
-                <span>Count</span>
-              </div>
-            </div>
-
-            {/* Stat Cards Grid */}
-            <div className="stat-cards-grid">
-              <div className="stat-card">
-                <h3>Downward Dog</h3>
-                <div className="stat-row">
-                  <span className="stat-label">Duration:</span>
-                  <span className="stat-val">0h 12m 0s</span>
-                </div>
-                <div className="stat-row">
-                  <span className="stat-label">Count:</span>
-                  <span className="stat-val">4 times</span>
-                </div>
-                <div className="stat-row">
-                  <span className="stat-label">Avg:</span>
-                  <span className="stat-val">0h 3m 0s</span>
-                </div>
-              </div>
-
-              <div className="stat-card">
-                <h3>Tree Pose</h3>
-                <div className="stat-row">
-                  <span className="stat-label">Duration:</span>
-                  <span className="stat-val">0h 10m 0s</span>
-                </div>
-                <div className="stat-row">
-                  <span className="stat-label">Count:</span>
-                  <span className="stat-val">3 times</span>
-                </div>
-                <div className="stat-row">
-                  <span className="stat-label">Avg:</span>
-                  <span className="stat-val">0h 3m 20s</span>
-                </div>
-              </div>
-
-              <div className="stat-card">
-                <h3>Warrior Pose</h3>
-                <div className="stat-row">
-                  <span className="stat-label">Duration:</span>
-                  <span className="stat-val">0h 7m 30s</span>
-                </div>
-                <div className="stat-row">
-                  <span className="stat-label">Count:</span>
-                  <span className="stat-val">2 times</span>
-                </div>
-                <div className="stat-row">
-                  <span className="stat-label">Avg:</span>
-                  <span className="stat-val">0h 3m 45s</span>
-                </div>
-              </div>
-            </div>
+             {/* Placeholder for now until generic InfluxDB Graph is implemented */}
+             <div style={{ textAlign: 'center' }}>
+                <p style={{ marginBottom: '10px' }}>📊 Data Playback</p>
+                <p style={{ fontSize: '12px', color: '#666' }}>
+                   Historical data for this session is stored in InfluxDB.<br/>
+                   (Playback Visualization coming soon)
+                </p>
+             </div>
           </div>
         </Card>
       </div>

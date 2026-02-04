@@ -6,6 +6,11 @@
       "file": "yoga_mat_v1.json"
     },
     {
+      "profile_id": "pressure_mat_32x32",
+      "device_type": "pressure_mat",
+      "file": "pressure_mat_32x32.json"
+    },
+    {
       "profile_id": "accel_3axis_v1",
       "device_type": "imu",
       "file": "accel_3axis_v1.json"

@@ -16,6 +16,13 @@ mqttClient.on('connect', () => {
 // --- STATE VARIABLES ---
 let port;
 let parser;
+let currentDeviceId = "unknown_device";
+let currentProfileId = "unknown_profile";
+
+// Parsing State
+let isReadingMatrix = false;
+let matrixBuffer = [];
+
 // --- AUTO-DISCOVERY & CONNECTION LOGIC ---
 async function autoConnect() {
     try {
@@ -25,7 +32,6 @@ async function autoConnect() {
         const ports = await SerialPort.list();
         
         // Filter logic: Find ports that look like Arduino or USB Serial
-        // On Windows, usually COM3+ (COM1/2 are typically internal)
         const validPort = ports.find(p => 
             p.manufacturer?.includes('Arduino') || 
             (p.path.startsWith('COM') && p.path !== 'COM1' && p.path !== 'COM2') ||
@@ -80,25 +86,34 @@ function connectToPort(path) {
     parser.on('data', handleSerialData);
 }
 
-// Parsing State
-let isReadingMatrix = false;
-let matrixBuffer = [];
-
 // --- DATA HANDLING LOGIC ---
 function handleSerialData(data) {
     try {
         const cleanData = data.toString().replace(/[\x00-\x1F\x7F]/g, "").trim();
+
+        // --- HANDSHAKE PARSING ---
+        if (cleanData.startsWith("HANDSHAKE|")) {
+            const parts = cleanData.split('|');
+            if (parts.length >= 3) {
+                currentDeviceId = parts[1];
+                currentProfileId = parts[2];
+                console.log(`🤝 Handshake Received! Device: ${currentDeviceId}, Profile: ${currentProfileId}`);
+            }
+            return;
+        }
 
         // --- MATRIX PARSING (Dynamic Size) ---
         if (cleanData === "TABLE") {
             // If we have a previous buffer filled, publish it now (End of previous frame)
             if (matrixBuffer.length > 0) {
                  const payload = {
-                    device_id: "pressure_mat_dynamic", // Ideally, this should come from the device too
+                    device_id: currentDeviceId, 
+                    profile_id: currentProfileId,
                     data: matrixBuffer,
                     timestamp: new Date().toISOString()
                 };
-                mqttClient.publish('iot/matrix/stream', JSON.stringify(payload));
+                mqttClient.publish(`iot/${payload.device_id}/telemetry`, JSON.stringify(payload));
+                console.log(`🚀 Published Matrix Frame: ${matrixBuffer.length} rows (ID: ${currentDeviceId})`);
             }
             
             // Start new frame
