@@ -1,10 +1,13 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Added
 import { sessionEvents } from "../mock/data.jsx";
 import "../css/session.css";
 // import "../css/sessionDetail.css"; // Removing missing file import
 import { Card } from "../components/common/Card";
+import { Button } from "../components/common/Button"; // Added
 
 export const SessionDetail = () => {
+  const navigate = useNavigate(); // Added
   const [selectedEvent, setSelectedEvent] = useState(sessionEvents[0]);
   return (
     <div className="session-detail-container">
@@ -27,6 +30,20 @@ export const SessionDetail = () => {
       </div>
 
       <div className="session-main-content">
+        <div style={{ marginBottom: '20px' }}>
+          <Button
+            className="btn-back-sessions"
+            variant="secondary" // User asked for beauty, secondary usually looks clean, but let's check styles. Primary might be too strong? Let's stick to secondary but adding icon makes it look like a nav button.
+            onClick={() => navigate('/sessions')}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '8px', fontWeight: '500', color: '#4b5563', backgroundColor: 'white', border: '1px solid #e5e7eb', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Back to Sessions
+          </Button>
+        </div>
         <Card title="Session Details">
           <div className="session-info-row">
             <div>

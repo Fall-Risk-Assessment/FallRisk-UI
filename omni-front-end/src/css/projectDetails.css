@@ -84,6 +84,41 @@
     background: #f8fafc;
 }
 
+/* Back to Dashboard Button */
+.btn-back-dashboard {
+    background-color: white;
+    color: #4b5563;
+    padding: 12px 32px;
+    border-radius: 50px;
+    /* Pill shape */
+    border: 1px solid #d1d5db;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 15px;
+}
+
+.btn-back-dashboard:hover {
+    background-color: #f9fafb;
+    border-color: #6b7280;
+    color: #111827;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    /* Enhanced shadow */
+    transform: translateY(-2px);
+    /* Slight lift */
+}
+
+.btn-back-dashboard:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+
 /* Empty State */
 .empty-state {
     display: flex;

@@ -10,7 +10,6 @@ export const DeviceInventory = () => {
     const {
         deviceList,
         profileList,
-        projectList,
         showForm,
         setShowForm,
         editingId,
