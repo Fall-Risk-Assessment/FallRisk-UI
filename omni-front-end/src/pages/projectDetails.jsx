@@ -111,7 +111,7 @@ export const ProjectDetails = () => {
 
     const fetchProfiles = async () => {
         try {
-            const response = await api.get("/admin/get-device-profiles");
+            const response = await api.get("/admin/get-profiles");
             setProfileList(response.data);
             // Auto-select profile if it matches ID
             const match = response.data.find(p => p.profile_id === id);
