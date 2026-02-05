@@ -4,16 +4,16 @@
 #define DHTPIN 2     // DHT11 Data Pin
 #define DHTTYPE DHT11
 
-#define TRIG_PIN 9   // HC-SR04 Trig
-#define ECHO_PIN 10  // HC-SR04 Echo
+#define TRIG_PIN 6   // HC-SR04 Trig
+#define ECHO_PIN 7  // HC-SR04 Echo
 
 #define DEVICE_ID "Arduino_Sensors_01"
-#define PROFILE_ID "multi_sensor"
+#define PROFILE_ID "mat_sensor"
 
 DHT dht(DHTPIN, DHTTYPE);
 
 void setup() {
-  Serial.begin(115200); // Must match Gateway Baud Rate
+  Serial.begin(460800); // Must match Gateway Baud Rate
   
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);

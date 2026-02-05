@@ -3,6 +3,9 @@
 #define NUM_ROWS 32
 #define NUM_COLS 32
 
+#define DEVICE_ID "Mat_32_plus"
+#define PROFILE_ID "mat_sensor"
+
 // ===== ROW MUX =====
 #define SIG_ROW1 A4
 #define SIG_ROW2 A9

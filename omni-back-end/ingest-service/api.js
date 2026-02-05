@@ -80,9 +80,41 @@ app.get("/telemetry/:device_id", async (req, res) => {
     const { start } = req.query; // e.g. "-1h", "-6h"
 
     const data = await readTelemetry(device_id, start);
+
     res.json({ count: data.length, data });
   } catch (err) {
     res.status(500).json({ error: "Failed to retrieve telemetry", details: err.message });
+  }
+});
+
+// GET /telemetry/:device_id/csv - Download history as CSV
+app.get("/telemetry/:device_id/csv", async (req, res) => {
+  try {
+    const { device_id } = req.params;
+    const { start, stop } = req.query; // e.g. start="-24h", stop="now()"
+
+    // For CSV, we want all data in range, so disable limit (pass null)
+    const data = await readTelemetry(device_id, start || "-1h", stop || "now()", null);
+    
+    if (!data || data.length === 0) {
+      return res.status(404).send("No data found for this device in the specified range.");
+    }
+
+    // Convert JSON to CSV
+    const items = data;
+    const replacer = (key, value) => value === null ? '' : value; 
+    const header = Object.keys(items[0]);
+    const csv = [
+      header.join(','), // header row first
+      ...items.map(row => header.map(fieldName => JSON.stringify(row[fieldName], replacer)).join(','))
+    ].join('\r\n');
+
+    res.header("Content-Type", "text/csv");
+    res.header("Content-Disposition", `attachment; filename="${device_id}_${new Date().toISOString().slice(0,10)}.csv"`);
+    res.send(csv);
+
+  } catch (err) {
+    res.status(500).send(`Failed to generate CSV: ${err.message}`);
   }
 });
 

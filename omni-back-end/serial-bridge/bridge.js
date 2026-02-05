@@ -4,7 +4,9 @@ import mqtt from 'mqtt';
 
 // --- CONFIGURATION ---
 const MQTT_BROKER = 'mqtt://localhost:1883';
-const BAUD_RATE = 460800; // Must match Arduino
+const args = process.argv.slice(2);
+const BAUD_RATE = parseInt(process.env.BAUD_RATE) || parseInt(args[0]) || 460800; // Default to 460800 if not set
+console.log(`ℹ️ Configured Baud Rate: ${BAUD_RATE}`);
 
 // --- MQTT SETUP ---
 const mqttClient = mqtt.connect(MQTT_BROKER);

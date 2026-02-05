@@ -1,0 +1,23 @@
+{
+  "profile_id": "mat_sensor",
+  "device_type": "sensor",
+  "telemetry_schema": {
+    "fields": [
+      {
+        "name": "distance",
+        "type": "float",
+        "unit": "cm"
+      },
+      {
+        "name": "temperature",
+        "type": "float",
+        "unit": "C"
+      },
+      {
+        "name": "humidity",
+        "type": "float",
+        "unit": "%"
+      }
+    ]
+  }
+}

@@ -68,18 +68,21 @@ export function writeTelemetry(data, profile) {
 
 const queryApi = influxDB.getQueryApi(org);
 
-export async function readTelemetry(deviceId, start = "-1h") {
-  console.log(`🔍 Querying InfluxDB for ${deviceId}, Range: ${start}`);
+export async function readTelemetry(deviceId, start = "-1h", stop = "now()", limit = 100) {
+  console.log(`🔍 Querying InfluxDB for ${deviceId}, Range: ${start} to ${stop}, Limit: ${limit}`);
 
   // Flux Query: Filter by device_id and get recent data
-  const fluxQuery = `
+  let fluxQuery = `
     from(bucket: "${bucket}")
-      |> range(start: ${start})
+      |> range(start: ${start}, stop: ${stop})
       |> filter(fn: (r) => r["device_id"] == "${deviceId}")
       |> pivot(rowKey:["_time"], columnKey:["_field"], valueColumn:"_value")
       |> sort(columns: ["_time"], desc: true)
-      |> limit(n: 100)
   `;
+
+  if (limit) {
+    fluxQuery += ` |> limit(n: ${limit})`;
+  }
 
   return new Promise((resolve, reject) => {
     const rows = [];
