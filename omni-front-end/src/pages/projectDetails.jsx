@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
 import api from "../api/axios";
 import "../css/projectDetails.css";
 // import "../css/modal.css"; // Replaced by Common Modal
@@ -135,6 +136,60 @@ export const ProjectDetails = () => {
         fetchProjectData();
     }, [fetchProjectData]);
 
+    // Socket.io Connection for Real-time Status
+    useEffect(() => {
+        const socket = io("http://localhost:4000");
+
+        socket.on("connect", () => {
+            console.log("Connected to Socket Server");
+        });
+
+        const handleData = (data) => {
+            const deviceId = data.device_id || data.id; // Adjust based on accurate payload structure
+            if (!deviceId) return;
+
+            setProjectDevices(prevDevices =>
+                prevDevices.map(device => {
+                    // Check if incoming data belongs to this device
+                    if (device.serialNumber === deviceId || device.name === deviceId) {
+                        return {
+                            ...device,
+                            isOnline: true,
+                            lastUpdated: new Date().toISOString()
+                        };
+                    }
+                    return device;
+                })
+            );
+        };
+
+        socket.on("sensor-data", handleData);
+        socket.on("matrix-data", (data) => {
+            // Matrix data might not have a clean device_id wrapper? 
+            // Usually matrix-data payload has { data: [...], device_id: ... } or similar.
+            // If payload is just { data: ... }, we might assume it handles the 'matrix' device.
+            // Based on LiveMonitor: socket.on("matrix-data", (payload) => ...
+            // Let's assume payload might carry ID or we treat it as generic active if device is Matrix type.
+            if (data) {
+                // For now, if we get ANY matrix data, looking for devices that seem to be matrices
+                // This is a rough heuristic if ID isn't present.
+                setProjectDevices(prevDevices =>
+                    prevDevices.map(device => {
+                        const type = (device.type || "").toLowerCase();
+                        if (type.includes('matrix') || type.includes('grid')) {
+                            return { ...device, isOnline: true, lastUpdated: new Date().toISOString() };
+                        }
+                        return device;
+                    })
+                );
+            }
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, []);
+
     const handleAddDevice = async () => {
         try {
             if (!newDeviceData.device_name || !newDeviceData.profile_id) {
@@ -235,6 +290,7 @@ export const ProjectDetails = () => {
                         + Add Device
                     </Button>
                 </div>
+
             </div>
 
             <div className="quick-stats">
@@ -253,7 +309,8 @@ export const ProjectDetails = () => {
             </div>
 
             {/* View Live Button (Between Sections) */}
-            <div className="view-live-btn-wrapper">
+            <div className="view-live-btn-wrapper" style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+
                 <Button
                     className="view-live-btn"
                     onClick={() => navigate(`/live-monitor?profile=${id}`)}
@@ -405,6 +462,17 @@ export const ProjectDetails = () => {
                     </Button>
                 </div>
             )}
+
+            {/* Back Button Footer */}
+            <div className="project-details-footer" style={{ marginTop: '40px', display: 'flex', justifyContent: 'center' }}>
+                <Button
+                    className="btn-back-dashboard"
+                    variant="secondary"
+                    onClick={() => navigate('/dashboard')}
+                >
+                    Back to Dashboard
+                </Button>
+            </div>
         </div>
     );
 };

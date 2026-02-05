@@ -181,17 +181,17 @@ export const LiveMonitor = () => {
   // Initial Load: Find first device and start polling
   useEffect(() => {
     const init = async () => {
+      const profileFilter = searchParams.get('profile');
+      if (!profileFilter) return;
+
       try {
         // 1. Get Devices
         const res = await api.get("/admin/get-devices");
         // Check for mock data fallback if API returns empty/error handled elsewhere
         let devices = Array.isArray(res.data) ? res.data : [];
 
-        // Filter by Profile if param exists
-        const profileFilter = searchParams.get('profile');
-        if (profileFilter) {
-          devices = devices.filter(d => d.profileKey === profileFilter);
-        }
+        // Filter by Profile
+        devices = devices.filter(d => d.profileKey === profileFilter);
 
         if (devices.length > 0) {
           setHasDevices(true);
@@ -294,6 +294,29 @@ export const LiveMonitor = () => {
       }
     }
   };
+
+  // --- NO PROFILE SELECTED UI ---
+  const profileId = searchParams.get('profile');
+  if (!profileId) {
+    return (
+      <div className="live-monitor-wrapper monitor-wrapper monitor-wrapper--empty">
+        <div className="empty-state-card">
+          <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#374151', marginBottom: '8px' }}>
+            กรุณาเลือก Device Profile ก่อน
+          </h2>
+          <p style={{ color: '#6b7280', marginBottom: '32px' }}>
+            Please select a device profile from the dashboard to view the monitor.
+          </p>
+          <Button
+            className="btn-add-device"
+            onClick={() => window.location.href = '/dashboard'}
+          >
+            Go to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   // --- EMPTY STATE UI ---
   if (!hasDevices) { // reliance on explicit Flag

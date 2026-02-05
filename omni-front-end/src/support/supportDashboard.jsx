@@ -6,7 +6,7 @@ export const SupportDashboard = () => {
     return (
         <div className="support-dashboard-container">
             <div className="metrics-grid">
-                <Card className="metric-card">
+                <Card className="metric-card" style={{ borderLeft: '5px solid #2196F3' }}>
                     <div className="metric-icon icon-blue">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
@@ -18,7 +18,7 @@ export const SupportDashboard = () => {
                     <span className="metric-trend">+450 this week</span>
                 </Card>
 
-                <Card className="metric-card">
+                <Card className="metric-card" style={{ borderLeft: '5px solid #0d0694ff' }}>
                     <div className="metric-icon icon-purple">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M12 2a10 10 0 1 0 10 10H12V2z"></path>
@@ -31,7 +31,7 @@ export const SupportDashboard = () => {
                     <span className="metric-trend">2 in training</span>
                 </Card>
 
-                <Card className="metric-card">
+                <Card className="metric-card" style={{ borderLeft: '5px solid #0dc3a2ff' }}>
                     <div className="metric-icon icon-green">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
@@ -43,7 +43,7 @@ export const SupportDashboard = () => {
                     <span className="metric-trend">Pose Recognition v3</span>
                 </Card>
 
-                <Card className="metric-card">
+                <Card className="metric-card" style={{ borderLeft: '5px solid #9e9c99ff' }}>
                     <div className="metric-icon icon-orange">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>

@@ -1,14 +1,69 @@
 import React from "react";
-import "../css/dashboard.css"; // ใช้ style พื้นฐานร่วมกัน
 import "../css/adminDashboard.css";
 import { Card } from "../components/common/Card";
 
 export const AdminDashboard = () => {
+  /* Stats with Icons */
   const stats = [
-    { label: "Total Users", value: "147", change: "+12 this month", color: "#48C9B0" },
-    { label: "Device Profiles", value: "8", change: "3 active types", color: "#5D6D7E" },
-    { label: "Active Sessions", value: "23", change: "Real-time", color: "#3498DB" },
-    { label: "System Alerts", value: "2", change: "Needs attention", color: "#E74C3C" },
+    {
+      label: "Total Users",
+      value: "147",
+      change: "+12 this month",
+      trendClass: "trend-up",
+      iconClass: "icon-blue",
+      color: "#2196F3",
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+      )
+    },
+    {
+      label: "Device Profiles",
+      value: "8",
+      change: "3 active types",
+      trendClass: "trend-neutral",
+      iconClass: "icon-teal",
+      color: "#00b894",
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+          <line x1="8" y1="21" x2="16" y2="21"></line>
+          <line x1="12" y1="17" x2="12" y2="21"></line>
+        </svg>
+      )
+    },
+    {
+      label: "Active Sessions",
+      value: "23",
+      change: "Real-time",
+      trendClass: "trend-up",
+      iconClass: "icon-green",
+      color: "#8b8d8bff",
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+      )
+    },
+    {
+      label: "System Alerts",
+      value: "2",
+      change: "Needs attention",
+      trendClass: "trend-down",
+      iconClass: "icon-red",
+      color: "#ef4444",
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      )
+    },
   ];
 
   return (
@@ -16,12 +71,15 @@ export const AdminDashboard = () => {
       {/* ส่วนบน: Stats Cards */}
       <div className="admin-stats-grid">
         {stats.map((stat, idx) => (
-          <Card key={idx} className="card" style={{ borderLeft: `4px solid ${stat.color}` }}>
-            <p className="stat-card-label">{stat.label}</p>
-            <h2 className="stat-card-value">{stat.value}</h2>
-            <p className="stat-change-text" style={{ color: stat.label === "System Alerts" ? "#E74C3C" : "#27AE60" }}>
+          <Card key={idx} className="metric-card" style={{ borderLeft: `5px solid ${stat.color}` }}>
+            <div className={`metric-icon ${stat.iconClass}`}>
+              {stat.icon}
+            </div>
+            <span className="metric-label">{stat.label}</span>
+            <h3 className="metric-value">{stat.value}</h3>
+            <span className={`metric-trend ${stat.trendClass}`}>
               {stat.change}
-            </p>
+            </span>
           </Card>
         ))}
       </div>
