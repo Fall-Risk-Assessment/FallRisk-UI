@@ -469,25 +469,39 @@
   height: 100%;
 }
 
-.btn-sensor-toggle {
-  font-size: 10px;
-  padding: 2px 6px;
-  color: white;
+
+
+/* Back Button */
+.btn-back {
+  background: transparent;
   border: none;
-  border-radius: 4px;
-  /* match btn-calibrate */
+  color: #64748b;
   cursor: pointer;
-}
-
-.btn-sensor-toggle.active {
-  background-color: #1f2937;
-}
-
-.btn-sensor-toggle.inactive {
-  background-color: #9ca3af;
-}
-
-.sensor-controls {
   display: flex;
-  gap: 5px;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 8px 0;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.btn-back:hover {
+  color: #1e293b;
+  transform: translateX(-4px);
+}
+
+.btn-back-header {
+  font-size: 24px;
+  padding: 0;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.btn-back-header:hover {
+  color: #1e293b;
+  transform: translateX(-4px);
 }
