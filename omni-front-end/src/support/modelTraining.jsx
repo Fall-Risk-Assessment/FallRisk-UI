@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import "../css/modelTraining.css";
-// import "../css/modal.css"; // Not strictly needed if we aren't using modal, but good to know
 import { Button } from "../components/common/Button";
 import { Input, Select } from "../components/common/Input";
 import { Card } from "../components/common/Card";
@@ -8,6 +7,14 @@ import { Card } from "../components/common/Card";
 export const ModelTraining = () => {
     const [showForm, setShowForm] = useState(false);
     const [showAdvanced, setShowAdvanced] = useState(false);
+
+    // Mock data for recent jobs
+    const [recentJobs] = useState([
+        { id: "J-1024", model: "Pose Recognition v6", status: "Running", progress: 45, epoch: "45/100", accuracy: "92.5%", started: "2 mins ago" },
+        { id: "J-1023", model: "Hand Gesture v2.1", status: "Completed", progress: 100, epoch: "150/150", accuracy: "95.8%", started: "5 hours ago" },
+        { id: "J-1022", model: "Pose Recognition v5", status: "Completed", progress: 100, epoch: "100/100", accuracy: "94.2%", started: "2 days ago" },
+        { id: "J-1021", model: "Experimental CNN", status: "Failed", progress: 12, epoch: "12/50", accuracy: "-", started: "3 days ago" },
+    ]);
 
     // Placeholder handlers for form inputs
     const [formData, setFormData] = useState({
@@ -45,7 +52,10 @@ export const ModelTraining = () => {
             <div className="model-training-header">
                 <div>
                     <h1>Model Training</h1>
-                    <p>Configure and monitor model training jobs</p>
+                    <p className="page-description">
+                        Configure neural network architectures and train models using labeled datasets.
+                        Transform raw data into predictive intelligence.
+                    </p>
                 </div>
                 {!showForm && (
                     <Button
@@ -56,6 +66,58 @@ export const ModelTraining = () => {
                     </Button>
                 )}
             </div>
+
+            {/* Recent Training Jobs List (Show when NOT in form mode) */}
+            {!showForm && (
+                <Card title="Recent Training Jobs" className="jobs-card">
+                    <div className="table-responsive">
+                        <table className="training-table">
+                            <thead>
+                                <tr>
+                                    <th>Job ID</th>
+                                    <th>Model Name</th>
+                                    <th>Status</th>
+                                    <th>Progress (Epochs)</th>
+                                    <th>Current Accuracy</th>
+                                    <th>Started</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {recentJobs.map((job) => (
+                                    <tr key={job.id}>
+                                        <td className="job-id">#{job.id}</td>
+                                        <td className="fw-500">{job.model}</td>
+                                        <td>
+                                            <span className={`status-badge ${job.status.toLowerCase()}`}>
+                                                {job.status}
+                                            </span>
+                                        </td>
+                                        <td style={{ minWidth: '150px' }}>
+                                            <div className="training-progress-container">
+                                                <div className="training-progress-bar">
+                                                    <div
+                                                        className={`training-progress-fill ${job.status.toLowerCase()}`}
+                                                        style={{ width: `${job.progress}%` }}
+                                                    ></div>
+                                                </div>
+                                                <span className="training-progress-text">{job.epoch}</span>
+                                            </div>
+                                        </td>
+                                        <td>{job.accuracy}</td>
+                                        <td><span className="text-gray">{job.started}</span></td>
+                                        <td>
+                                            <Button className="action-btn-icon" onClick={() => console.log("View", job.id)}>
+                                                View
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </Card>
+            )}
 
             {/* Configure New Training Job Form */}
             {showForm && (<>
@@ -241,9 +303,14 @@ export const ModelTraining = () => {
                         </Button>
                     </div>
                 </Card>
+
+                {/* Visual Placeholder for training (removed confusion matrix as it was confusing here) */}
                 <div className="metric-placeholder-card">
-                    <span className="metric-title">Confusion</span>
-                    <span className="metric-subtitle">Matrix</span>
+                    <div style={{ textAlign: 'center' }}>
+                        <span style={{ fontSize: '3rem', display: 'block' }}>📈</span>
+                        <span className="metric-title">Live Training Metrics</span>
+                        <span className="metric-subtitle">Loss & Accuracy Curves will appear here during training</span>
+                    </div>
                 </div>
             </>)}
         </div>

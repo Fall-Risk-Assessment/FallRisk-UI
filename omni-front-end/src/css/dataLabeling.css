@@ -1,4 +1,209 @@
-/* Data Labeling Styles */
 .data-labeling-container {
-    padding: 20px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.data-labeling-container .labeling-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.data-labeling-container .page-description {
+    color: #6b7280;
+    margin-top: 8px;
+    max-width: 600px;
+}
+
+.data-labeling-container .labeling-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+}
+
+.data-labeling-container .stat-card {
+    text-align: center;
+}
+
+.data-labeling-container .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 8px 0;
+}
+
+.data-labeling-container .stat-sub {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.data-labeling-container .text-green {
+    color: #10b981;
+}
+
+.data-labeling-container .text-orange {
+    color: #f59e0b;
+}
+
+.data-labeling-container .import-btn {
+    background-color: #0f172a;
+    /* Navy */
+    color: white;
+}
+
+/* Table Styles */
+.data-labeling-container .table-responsive {
+    overflow-x: auto;
+}
+
+.data-labeling-container .labeling-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.data-labeling-container .labeling-table th,
+.data-labeling-container .labeling-table td {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.data-labeling-container .labeling-table th {
+    font-weight: 600;
+    color: #374151;
+    background-color: #f9fafb;
+}
+
+.data-labeling-container .fw-500 {
+    font-weight: 500;
+}
+
+.data-labeling-container .action-btn-sm {
+    padding: 6px 12px;
+    font-size: 0.875rem;
+    background-color: #0d9488;
+    /* Teal */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.data-labeling-container .action-btn-sm:hover {
+    background-color: #0f766e;
+}
+
+/* Progress Bar */
+.data-labeling-container .progress-bar-container {
+    background-color: #e5e7eb;
+    border-radius: 9999px;
+    height: 8px;
+    width: 100px;
+    margin-bottom: 4px;
+    overflow: hidden;
+}
+
+.data-labeling-container .progress-bar-fill {
+    background-color: #0d9488;
+    height: 100%;
+}
+
+.data-labeling-container .progress-text {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+/* Status Badges */
+.data-labeling-container .status-badge {
+    padding: 4px 8px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.data-labeling-container .status-badge.completed {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.data-labeling-container .status-badge.in-progress {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.data-labeling-container .status-badge.pending {
+    background-color: #f3f4f6;
+    color: #4b5563;
+}
+
+/* Quick Labeling Mockup */
+.data-labeling-container .placeholder-labeling-ui {
+    display: flex;
+    gap: 24px;
+    height: 300px;
+}
+
+.data-labeling-container .frame-viewer {
+    flex: 2;
+    background-color: #000;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.data-labeling-container .frame-placeholder {
+    color: #6b7280;
+}
+
+.data-labeling-container .label-controls {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.data-labeling-container .label-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.data-labeling-container .label-tag {
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    border-radius: 6px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.data-labeling-container .label-tag:hover {
+    border-color: #0d9488;
+    background-color: #f0fdfa;
+}
+
+.data-labeling-container .add-new {
+    border-style: dashed;
+    color: #6b7280;
+    text-align: center;
+}
+
+.data-labeling-container .control-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.data-labeling-container .control-actions button {
+    flex: 1;
+}
+
+.data-labeling-container .label-header div h1 {
+    font-size: 1.8rem;
+    color: #111827;
 }
