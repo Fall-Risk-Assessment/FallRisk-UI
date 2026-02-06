@@ -72,8 +72,8 @@ export const LiveMonitor = () => {
     // Check type or name for "Matrix" or "Grid"
     const type = (device.type || "").toLowerCase();
     const name = (device.name || "").toLowerCase();
-    if (type.includes('matrix') || type.includes('grid') || type.includes('mat') || 
-        name.includes('matrix') || name.includes('grid') || name.includes('mat')) {
+    if (type.includes('matrix') || type.includes('grid') || type.includes('mat') ||
+      name.includes('matrix') || name.includes('grid') || name.includes('mat')) {
       return 'MATRIX';
     }
     // Default to Sensor
@@ -115,7 +115,7 @@ export const LiveMonitor = () => {
       if (!currentDevice) return;
 
       console.log("⚡ Sensor Data:", data);
-      
+
       if (data.device_id) {
         lastDeviceIdRef.current = data.device_id;
       }
@@ -282,8 +282,8 @@ export const LiveMonitor = () => {
       if (!selectedDevice) return;
       try {
         // Mock User ID for Demo, in real app get from Auth Context
-        const user = JSON.parse(localStorage.getItem('user')); 
-        const userId = user ? user.id : null; 
+        const user = JSON.parse(localStorage.getItem('user'));
+        const userId = user ? user.id : null;
 
         const { data } = await dashboardService.startSession(selectedDevice.id, userId);
         setActiveSessionId(data.id);
@@ -392,14 +392,14 @@ export const LiveMonitor = () => {
                 >
                   CALIBRATE
                 </Button>
-                
-                 {/* SESSION REC BUTTON */}
-                 <Button
+
+                {/* SESSION REC BUTTON */}
+                <Button
                   onClick={handleToggleSession}
                   disabled={!isConnected}
                   className={activeSessionId ? "btn-stop-rec" : "btn-start-rec"}
-                  style={{ 
-                    padding: '4px 12px', 
+                  style={{
+                    padding: '4px 12px',
                     fontSize: '12px',
                     backgroundColor: activeSessionId ? '#ef4444' : '#2563eb',
                     color: 'white',
@@ -422,21 +422,21 @@ export const LiveMonitor = () => {
               Last: {lastRxTime ? lastRxTime.toLocaleTimeString() : "Waiting..."}
             </div>
 
-            <div className="heatmap-container heatmap-grid-32">
-              <div className="heatmap-container heatmap-grid-32">
-                {matrixData.map((row, rIndex) => (
-                  row.map((val, cIndex) => (
-                    <div
-                      key={`${rIndex}-${cIndex}`}
-                      className="heatmap-cell"
-                      style={{
-                        backgroundColor: getCellColor(val, rIndex, cIndex),
-                      }}
-                      title={`R${rIndex} C${cIndex}: ${val}`}
-                    />
-                  ))
-                ))}
-              </div>
+            <div className={`heatmap-container ${matrixData.length > 0 ? "heatmap-grid-dynamic" : "heatmap-grid-32"}`}
+              style={{ "--cols": matrixData.length > 0 ? matrixData[0].length : 32 }}
+            >
+              {matrixData.map((row, rIndex) => (
+                row.map((val, cIndex) => (
+                  <div
+                    key={`${rIndex}-${cIndex}`}
+                    className="heatmap-cell"
+                    style={{
+                      backgroundColor: getCellColor(val, rIndex, cIndex),
+                    }}
+                    title={`R${rIndex} C${cIndex}: ${val}`}
+                  />
+                ))
+              ))}
             </div>
           </Card>
 
@@ -471,7 +471,7 @@ export const LiveMonitor = () => {
           <Button
             className="btn-session"
             onClick={() => window.location.href = '/sessions'}
-           >
+          >
             Sessions
           </Button>
         </div>
@@ -664,12 +664,12 @@ export const LiveMonitor = () => {
           className="btn-session"
           onClick={() => {
             if (activeSessionId) {
-               alert("Please stop recording first");
-               return;
+              alert("Please stop recording first");
+              return;
             }
             // Use selectedDevice or Fallback to last seen ID from stream
             const targetId = selectedDevice?.serialNumber || lastDeviceIdRef.current;
-            
+
             if (targetId) {
               navigate(`/sessions?deviceId=${targetId}`);
             } else {
