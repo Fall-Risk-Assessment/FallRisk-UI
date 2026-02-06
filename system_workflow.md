@@ -62,7 +62,18 @@ npm start
 
 _สังเกต: ดูที่ Log ว่า `Connected to MQTT` และ `API Server running on port 4000`_
 
-### 🟢 Terminal 4: Frontend (หน้าเว็บ)
+_สังเกต: ดูที่ Log ว่า `Connected to MQTT` และ `API Server running on port 4000`_
+
+### 🟢 Terminal 4: Ingest Service (คนยันทึกข้อมูล) **สำคัญมาก!**
+
+ตัวนี้ทำหน้าที่บันทึกข้อมูลลง InfluxDB ถ้าไม่เปิด **ดูย้อนหลังไม่ได้นะครับ**
+
+```bash
+cd omni-back-end/ingest-service
+npm run dev
+```
+
+### 🟢 Terminal 5: Frontend (หน้าเว็บ)
 
 ```bash
 cd omni-front-end
@@ -71,7 +82,9 @@ npm run dev
 
 _เมื่อรันเสร็จ ให้เปิด Browser ไปที่ `http://localhost:5173`_
 
-### 🟢 Terminal 5: Database (Prisma Studio) _[เปิดเมื่อต้องการดูข้อมูล]_
+_เมื่อรันเสร็จ ให้เปิด Browser ไปที่ `http://localhost:5173`_
+
+### 🟢 Terminal 6: Database (Prisma Studio) _[เปิดเมื่อต้องการดูข้อมูล]_
 
 ```bash
 cd omni-back-end/platform-service

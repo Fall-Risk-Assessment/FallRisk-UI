@@ -4,18 +4,37 @@ import "../css/session.css";
 import { Card } from "../components/common/Card";
 import { Button } from "../components/common/Button";
 import { dashboardService } from "../services/dashboardService";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 export const SessionDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [session, setSession] = useState(null);
+  const [telemetry, setTelemetry] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchSession = async () => {
       try {
+        // 1. Fetch Session Info
         const res = await dashboardService.getSession(id);
         setSession(res.data);
+        
+        // 2. Fetch Telemetry Data (JSON)
+        try {
+            const telemRes = await dashboardService.getSessionData(id);
+            const data = Array.isArray(telemRes.data) ? telemRes.data : [];
+            
+            // Map _time to time for Recharts
+            const formattedData = data.map(d => ({
+                ...d,
+                time: d._time ? new Date(d._time).toLocaleTimeString() : d.timestamp
+            }));
+            setTelemetry(formattedData);
+        } catch (err) {
+            console.warn("Failed to load telemetry", err);
+        }
+
       } catch (error) {
         console.error("Failed to fetch session", error);
       } finally {
@@ -36,29 +55,9 @@ export const SessionDetail = () => {
     return `${diffMins}m ${diffSecs}s`;
   };
 
-  const handleDownloadCsv = async () => {
-    if (!session || !session.id) return;
-    try {
-      const response = await dashboardService.getSessionData(session.id);
-
-      // Create Blob from response
-      const blob = new Blob([response.data], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-
-      // Temporary Anchor
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `session-${session.id}.csv`;
-      document.body.appendChild(a);
-      a.click();
-
-      // Cleanup
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error("Download failed", error);
-      alert("Failed to download CSV. No data might be available.");
-    }
+  const handleDownloadCsv = () => {
+      const url = dashboardService.downloadSessionCsv(id);
+      window.open(url, '_blank');
   };
 
   return (
@@ -105,34 +104,43 @@ export const SessionDetail = () => {
           </div>
         </Card>
 
-        <Card
-          className="timeline-card"
-          title="Recorded Data"
-          titleClassName="info-label"
-          headerAction={
-            <Button
-              onClick={handleDownloadCsv}
-              variant="outline"
-              style={{ fontSize: '12px', padding: '4px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-              </svg>
-              Download CSV
-            </Button>
-          }
+        <Card 
+            className="timeline-card" 
+            title="Recorded Data" 
+            titleClassName="info-label"
+            headerAction={
+                <Button 
+                   onClick={handleDownloadCsv}
+                   variant="outline"
+                   style={{ fontSize: '12px', padding: '4px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                     <polyline points="7 10 12 15 17 10"></polyline>
+                     <line x1="12" y1="15" x2="12" y2="3"></line>
+                   </svg>
+                   Download CSV
+                </Button>
+            }
         >
-          <div className="timeline-placeholder">
-            {/* Placeholder for now until generic InfluxDB Graph is implemented */}
-            <div style={{ textAlign: 'center' }}>
-              <p style={{ marginBottom: '10px' }}>📊 Data Playback</p>
-              <p style={{ fontSize: '12px', color: '#666' }}>
-                Historical data for this session is stored in InfluxDB.<br />
-                (Playback Visualization coming soon)
-              </p>
-            </div>
+          <div className="timeline-placeholder" style={{ height: '400px', display: 'block' }}>
+            {telemetry.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={telemetry}>
+                        <XAxis dataKey="time" minTickGap={50} stroke="#9ca3af" fontSize={12} />
+                        <YAxis stroke="#9ca3af" fontSize={12} />
+                        <Tooltip />
+                        <Legend />
+                        <Line type="monotone" dataKey="distance" stroke="#2563eb" dot={false} strokeWidth={2} activeDot={{ r: 6 }} />
+                        <Line type="monotone" dataKey="temperature" stroke="#dc2626" dot={false} strokeWidth={2} />
+                        <Line type="monotone" dataKey="humidity" stroke="#16a34a" dot={false} strokeWidth={2} />
+                    </LineChart>
+                </ResponsiveContainer>
+            ) : (
+                <div style={{ textAlign: 'center', paddingTop: '150px' }}>
+                  <p style={{ color: '#666' }}>No data recorded for this session.</p>
+                </div>
+            )}
           </div>
         </Card>
       </div>
