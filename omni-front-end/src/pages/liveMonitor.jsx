@@ -44,6 +44,7 @@ export const LiveMonitor = () => {
 
   // Ref for Selected Device to be accessible in Socket Callback
   const selectedDeviceRef = useRef(null);
+  const devicesRef = useRef([]); // Ref for all available devices
   const lastDeviceIdRef = useRef(null); // Fallback for ID from stream
 
   // Sync Ref with State
@@ -101,16 +102,53 @@ export const LiveMonitor = () => {
     // --- NEW: Sensor Data Listener (Real-time) ---
     socket.on("sensor-data", (data) => {
       // Filter by Device ID
-      const currentDevice = selectedDeviceRef.current;
+      const currentDevice = selectedDeviceRef.current; // The device currently selected in UI
+      const availableDevices = devicesRef.current; // All devices in this profile
 
-      // Strict Filtering: If we have a selected device, ONLY accept matching ID
-      if (currentDevice && data.device_id && data.device_id !== currentDevice.serialNumber) {
-        return; // Ignore data from other devices
+      // --- AUTO-SWITCH LOGIC ---
+      // If data comes from a valid device that is NOT the current one, switch validation
+      let targetDevice = currentDevice;
+
+      // Check if this data belongs to a known device in our list
+      const matchingDevice = availableDevices.find(d => d.serialNumber === data.device_id);
+
+      if (matchingDevice) {
+        // If we don't have a selected device, OR we are not connected to the current one,
+        // OR the incoming data is explicitly from a different known device (and we want auto-switch)
+        // Let's implement robust auto-switch:
+        // Switch if:
+        // 1. No device selected
+        // 2. Current device is NOT sending data (implied by this event being from someone else and maybe us being in 'waiting' state, 
+        //    but simple "Last In wins" might be better for "Live" monitoring)
+        
+        if (!currentDevice || currentDevice.serialNumber !== data.device_id) {
+           console.log(`Auto-Switching to active device: ${matchingDevice.name}`);
+           setSelectedDevice(matchingDevice);
+           targetDevice = matchingDevice;
+        }
+      } else {
+         // If data is from unknown device, we might still want to show it if we are desperate (no device selected)
+         // But better to stick to profile devices.
+         if (currentDevice && data.device_id && data.device_id !== currentDevice.serialNumber) {
+           // Strict Mode: Ignore unknown IDs if we have a valid selection?
+           // For now, let's allow it if we are waiting? No, adhere to matchingDevice check above.
+           // If we didn't find a matchingDevice in our list, we ignore it to prevent pollution
+           // UNLESS we are in a debug mode.
+           return; 
+         }
+      }
+      
+      // Update ref for immediate use in this cycle if we switched
+      selectedDeviceRef.current = targetDevice;
+
+      // Strict Filtering: If we (still) have a selected device, ONLY accept matching ID
+      if (targetDevice && data.device_id && data.device_id !== targetDevice.serialNumber) {
+        return; // This shouldn't happen due to auto-switch above, but safety check
       }
 
       // If no device is selected, we shouldn't be plotting anything ideally, 
       // or we just plot generic data. Requirement says "Direct match".
-      if (!currentDevice) return;
+      if (!targetDevice) return;
 
       console.log("⚡ Sensor Data:", data);
 
@@ -205,12 +243,16 @@ export const LiveMonitor = () => {
         // Filter by Profile
         devices = devices.filter(d => d.profileKey === profileFilter);
 
+        // Update Refs
+        devicesRef.current = devices;
+
         if (devices.length > 0) {
           setHasDevices(true);
           // Default to first active device logic, or just the first one
           // Prefer finding one that matches "sensor" type or has "Arduino" in name
           const target = devices.find(d => d.name.toLowerCase().includes('arduino')) || devices[0];
           setSelectedDevice(target);
+          selectedDeviceRef.current = target; // Ensure Ref is primed
         } else {
           setHasDevices(false);
         }
