@@ -569,6 +569,27 @@ export const LiveMonitor = () => {
         className="card-current-pose"
         title="SENSORS"
         titleClassName="margin-bottom-0"
+        headerAction={
+          <div className="flex-gap-10" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Button
+              onClick={handleToggleSession}
+              disabled={!isConnected}
+              className={activeSessionId ? "btn-stop-rec" : "btn-start-rec"}
+              style={{
+                padding: '4px 12px',
+                fontSize: '12px',
+                backgroundColor: activeSessionId ? '#ef4444' : '#2563eb',
+                color: 'white',
+                border: 'none'
+              }}
+            >
+              {activeSessionId ? "⏹ STOP REC" : "⏺ START REC"}
+            </Button>
+            <span className={`status-indicator ${isConnected ? 'status-live' : 'status-disconnected'}`} style={{ color: isConnected ? '#16a34a' : '#dc2626', fontWeight: 'bold' }}>
+              ● {isConnected ? 'LIVE' : 'OFFLINE'}
+            </span>
+          </div>
+        }
       >
 
         <div className="sensor-grid">

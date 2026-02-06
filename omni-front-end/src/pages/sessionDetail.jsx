@@ -55,9 +55,29 @@ export const SessionDetail = () => {
     return `${diffMins}m ${diffSecs}s`;
   };
 
-  const handleDownloadCsv = () => {
-      const url = dashboardService.downloadSessionCsv(id);
-      window.open(url, '_blank');
+  const handleDownloadCsv = async () => {
+    if (!session || !session.id) return;
+    try {
+      const response = await dashboardService.downloadSessionCsv(session.id);
+      
+      // Create Blob from response
+      const blob = new Blob([response.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      
+      // Temporary Anchor
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `session-${session.id}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Download failed", error);
+      alert("Failed to download CSV. Please try again.");
+    }
   };
 
   return (
