@@ -39,8 +39,8 @@ export const LiveMonitor = () => {
   const dataBufferRef = useRef([]);
   const [intervalStats, setIntervalStats] = useState({ min: 0, max: 0, avg: 0 });
 
-  // Dynamic Mode based on incoming data
-  const [dataMode, setDataMode] = useState(null); // 'MATRIX' | 'SENSOR' | null
+  // Dynamic Mode based on incoming data - REMOVED
+  // const [dataMode, setDataMode] = useState(null);
 
   // Ref for Selected Device to be accessible in Socket Callback
   const selectedDeviceRef = useRef(null);
@@ -447,6 +447,25 @@ export const LiveMonitor = () => {
     <div className="live-monitor-wrapper monitor-wrapper">
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         <h1>Live Monitor: {selectedDevice ? selectedDevice.name : "Unknown"}</h1>
+        {/* GLOBAL RECORD BUTTON */}
+        <Button
+          onClick={handleToggleSession}
+          disabled={!isConnected}
+          className={activeSessionId ? "btn-stop-rec" : "btn-start-rec"}
+          style={{
+             marginLeft: 'auto',
+             padding: '6px 16px',
+             fontSize: '14px',
+             backgroundColor: activeSessionId ? '#ef4444' : '#2563eb',
+             color: 'white',
+             border: 'none',
+             borderRadius: '6px',
+             fontWeight: '600',
+             boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}
+        >
+          {activeSessionId ? "⏹ STOP RECORDING" : "⏺ START RECORDING"}
+        </Button>
       </div>
 
       {/* --- HEATMAP SECTION (Conditional) --- */}
@@ -531,20 +550,6 @@ export const LiveMonitor = () => {
         titleClassName="margin-bottom-0"
         headerAction={
           <div className="flex-gap-10" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Button
-              onClick={handleToggleSession}
-              disabled={!isConnected}
-              className={activeSessionId ? "btn-stop-rec" : "btn-start-rec"}
-              style={{
-                padding: '4px 12px',
-                fontSize: '12px',
-                backgroundColor: activeSessionId ? '#ef4444' : '#2563eb',
-                color: 'white',
-                border: 'none'
-              }}
-            >
-              {activeSessionId ? "⏹ STOP REC" : "⏺ START REC"}
-            </Button>
             {/* Duplicate Status for visibility when scrolling */}
             {!isMatrixDevice && (
                  <span className={`status-indicator ${isConnected ? 'status-live' : 'status-disconnected'}`} style={{ color: isConnected ? '#16a34a' : '#dc2626', fontWeight: 'bold' }}>
