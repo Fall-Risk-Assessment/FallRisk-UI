@@ -120,24 +120,24 @@ export const LiveMonitor = () => {
         // 1. No device selected
         // 2. Current device is NOT sending data (implied by this event being from someone else and maybe us being in 'waiting' state, 
         //    but simple "Last In wins" might be better for "Live" monitoring)
-        
+
         if (!currentDevice || currentDevice.serialNumber !== data.device_id) {
-           console.log(`Auto-Switching to active device: ${matchingDevice.name}`);
-           setSelectedDevice(matchingDevice);
-           targetDevice = matchingDevice;
+          console.log(`Auto-Switching to active device: ${matchingDevice.name}`);
+          setSelectedDevice(matchingDevice);
+          targetDevice = matchingDevice;
         }
       } else {
-         // If data is from unknown device, we might still want to show it if we are desperate (no device selected)
-         // But better to stick to profile devices.
-         if (currentDevice && data.device_id && data.device_id !== currentDevice.serialNumber) {
-           // Strict Mode: Ignore unknown IDs if we have a valid selection?
-           // For now, let's allow it if we are waiting? No, adhere to matchingDevice check above.
-           // If we didn't find a matchingDevice in our list, we ignore it to prevent pollution
-           // UNLESS we are in a debug mode.
-           return; 
-         }
+        // If data is from unknown device, we might still want to show it if we are desperate (no device selected)
+        // But better to stick to profile devices.
+        if (currentDevice && data.device_id && data.device_id !== currentDevice.serialNumber) {
+          // Strict Mode: Ignore unknown IDs if we have a valid selection?
+          // For now, let's allow it if we are waiting? No, adhere to matchingDevice check above.
+          // If we didn't find a matchingDevice in our list, we ignore it to prevent pollution
+          // UNLESS we are in a debug mode.
+          return;
+        }
       }
-      
+
       // Update ref for immediate use in this cycle if we switched
       selectedDeviceRef.current = targetDevice;
 
@@ -404,12 +404,7 @@ export const LiveMonitor = () => {
   // --- WAITING FOR CONNECTION UI ---
   if (!isConnected) {
     return (
-      <div className="live-monitor-wrapper monitor-wrapper monitor-wrapper--empty" style={{ justifyContent: 'flex-start' }}>
-        <div style={{ width: '100%', paddingBottom: '20px' }}>
-          <Button onClick={handleBack} className="btn-back">
-            ← Back
-          </Button>
-        </div>
+      <div className="live-monitor-wrapper monitor-wrapper monitor-wrapper--empty" style={{ justifyContent: 'space-between', paddingBottom: '20px' }}>
         <div className="empty-state-card" style={{ margin: 'auto' }}>
           <div className="loader-spinner" style={{ marginBottom: '20px' }}></div>
           <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#374151', marginBottom: '8px' }}>
@@ -424,6 +419,11 @@ export const LiveMonitor = () => {
             </p>
           )}
         </div>
+        <div style={{ width: '100%' }}>
+          <Button onClick={handleBack} className="btn-back">
+            ← Back
+          </Button>
+        </div>
       </div>
     );
   }
@@ -436,9 +436,6 @@ export const LiveMonitor = () => {
     return (
       <div className="live-monitor-wrapper monitor-wrapper">
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <Button onClick={handleBack} className="btn-back-header">
-            ←
-          </Button>
           <h1>Live Monitor: {selectedDevice ? selectedDevice.name : "Unknown"}</h1>
         </div>
         <div className="monitor-grid monitor-flex-row">
@@ -531,7 +528,10 @@ export const LiveMonitor = () => {
         </Card>
 
         {/* Navigation Button */}
-        <div className="session-nav-container">
+        <div className="session-nav-container" style={{ justifyContent: 'space-between' }}>
+          <Button onClick={handleBack} className="btn-back">
+            ← Back
+          </Button>
           <Button
             className="btn-session"
             onClick={() => window.location.href = '/sessions'}
@@ -558,9 +558,6 @@ export const LiveMonitor = () => {
   return (
     <div className="live-monitor-wrapper monitor-wrapper">
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <Button onClick={handleBack} className="btn-back-header">
-          ←
-        </Button>
         <h1>Live Monitor: {selectedDevice ? selectedDevice.name : "Unknown"}</h1>
       </div>
 
@@ -694,7 +691,10 @@ export const LiveMonitor = () => {
       {/* Current Pose Removed for Sensor Mode */}
 
       {/* Navigation Button */}
-      <div className="session-nav-container">
+      <div className="session-nav-container" style={{ justifyContent: 'space-between' }}>
+        <Button onClick={handleBack} className="btn-back">
+          ← Back
+        </Button>
         <Button
           className="btn-session"
           onClick={() => {
