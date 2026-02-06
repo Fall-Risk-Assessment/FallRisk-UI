@@ -32,6 +32,14 @@
    - **Duration:** ระยะเวลาที่อัด
    - **Status:** สถานะ (Completed = เสร็จสิ้น, Recording... = กำลังอัด)
 3. กดปุ่ม **View** เพื่อดูรายละเอียดเพิ่มเติม (เวลาเริ่ม/จบ ละเอียด)
+4. (New) กดปุ่ม **Download CSV** เพื่อดาวน์โหลดไฟล์ข้อมูลดิบทั้งหมดของ Session นั้น (หากมีการ Implement ปุ่มแล้ว)
+
+### 2.4 การดาวน์โหลดข้อมูล CSV (Export Data)
+
+ผู้ดูแลระบบหรือผู้ใช้งานสามารถดึงข้อมูลดิบ (Telemetry Data) ออกมาเป็นไฟล์ CSV ได้ผ่าน API Endpoint (ดูรายละเอียดในหัวข้อ 3.2)
+
+- ข้อมูลที่ได้: Timestamp, Device ID, และค่า Sensor ทุกตัวในช่วงเวลานั้น
+- การนำไปใช้: นำไปวิเคราะห์ต่อใน Excel, Python หรือ MATLAB ได้ทันที
 
 ---
 
@@ -55,6 +63,7 @@
 - `PUT /api/admin/end-session/:id`: อัปเดตเวลาจบ (Stop)
 - `GET /api/admin/get-sessions/:deviceId`: ดึงรายการตามอุปกรณ์
 - `GET /api/admin/get-session/:id`: ดึงรายละเอียด Session เดียว
+- `GET /api/admin/export-session/:id`: **(New)** ดาวน์โหลดไฟล์ CSV ของ Session นั้นๆ (Query จาก InfluxDB)
 
 ### 3.3 Frontend Implementation
 

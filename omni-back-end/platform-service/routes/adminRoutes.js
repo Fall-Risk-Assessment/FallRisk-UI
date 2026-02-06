@@ -41,5 +41,6 @@ router.put("/end-session/:id", sessionController.endSession);
 router.get("/get-sessions/:deviceId", sessionController.getSessionsByDevice);
 router.get("/get-session/:id", sessionController.getSessionById);
 router.get("/export-session/:id", sessionController.exportSessionCsv);
+router.get("/get-session-data/:id", sessionController.getSessionData);
 
 export default router;
