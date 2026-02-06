@@ -1,16 +1,63 @@
-# React + Vite
+# Omni Project Frontend (ส่วนหน้าบ้าน)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+โปรเจกต์ **Omni Frontend** แอปพลิเคชันนี้ถูกพัฒนาขึ้นเพื่อเป็นส่วนติดต่อผู้ใช้ (User Interface) สำหรับระบบ Omni Project โดยใช้เทคโนโลยีที่ทันสมัยเพื่อให้ได้ประสบการณ์การใช้งานที่ดีเยี่ยม
 
-Currently, two official plugins are available:
+## 🚀 เกี่ยวกับโปรเจกต์
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Omni Frontend เป็นเว็บแอปพลิเคชันที่สร้างด้วย **React** และ **Vite** มุ่งเน้นความรวดเร็วและประสิทธิภาพในการทำงาน เชื่อมต่อกับ Backend เพื่อแสดงผลข้อมูลแบบ Real-time และจัดการข้อมูลต่างๆ ภายในระบบ
 
-## React Compiler
+## 🛠 เทคโนโลยีที่ใช้ (Tech Stack)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+โปรเจกต์นี้ขับเคลื่อนด้วยเทคโนโลยีหลักดังนี้:
 
-## Expanding the ESLint configuration
+- **[React 19](https://react.dev/)**: Library หลักสำหรับการสร้าง User Interface
+- **[Vite](https://vitejs.dev/)**: Build tool ที่รวดเร็วสำหรับการพัฒนาเว็บสมัยใหม่
+- **[Recharts](https://recharts.org/)**: Library สำหรับการสร้างกราฟและ Data Visualization
+- **[Socket.io-client](https://socket.io/)**: สำหรับการเชื่อมต่อและรับส่งข้อมูลแบบ Real-time
+- **[Axios](https://axios-http.com/)**: สำหรับการทำ HTTP Requests ไปยัง API
+- **[React Router Dom](https://reactrouter.com/)**: สำหรับการจัดการ Routing ภายในแอปพลิเคชัน
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 📂 โครงสร้างโปรเจกต์ (Project Structure)
+
+โครงสร้างไฟล์และโฟลเดอร์หลักภายใน `src`:
+
+- `src/pages`: หน้าเว็บหลักต่างๆ ของแอปพลิเคชัน
+- `src/components`: UI Components ที่สามารถนำกลับมาใช้ซ้ำได้
+- `src/services`: ไฟล์สำหรับเชื่อมต่อ API และจัดการ Authentication
+- `src/hooks`: Custom React Hooks สำหรับ Logic ที่ใช้บ่อย
+- `src/layout`: การจัดการ Layout หลักของหน้าเว็บ
+- `src/css`: ไฟล์ Stylesheet (CSS) แยกตามส่วนต่างๆ
+
+## 📦 การติดตั้งและเริ่มต้นใช้งาน (Getting Started)
+
+ทำตามขั้นตอนด้านล่างเพื่อรันโปรเจกต์บนเครื่องของคุณ:
+
+### 1. ติดตั้ง Dependencies
+เปิด Terminal และรันคำสั่ง:
+
+```bash
+npm install
+```
+
+### 2. รันโหมด Development
+เพื่อเริ่มต้นเซิร์ฟเวอร์สำหรับพัฒนา:
+
+```bash
+npm run dev
+```
+แอปพลิเคชันจะเปิดขึ้นที่ [http://localhost:5173](http://localhost:5173) (หรือพอร์ตที่ระบุใน Terminal)
+
+### 3. Build สำหรับ Production
+เมื่อต้องการนำขึ้นใช้งานจริง ให้รันคำสั่ง:
+
+```bash
+npm run build
+```
+ไฟล์สำหรับ Production จะถูกสร้างในโฟลเดอร์ `dist`
+
+### 4. ตรวจสอบ Code (Linting)
+เพื่อตรวจสอบความถูกต้องของโค้ดด้วย ESLint:
+
+```bash
+npm run lint
+```

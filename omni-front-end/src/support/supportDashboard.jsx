@@ -18,8 +18,8 @@ export const SupportDashboard = () => {
                     <span className="metric-trend">+450 this week</span>
                 </Card>
 
-                <Card className="metric-card" style={{ borderLeft: '5px solid #0d0694ff' }}>
-                    <div className="metric-icon icon-purple">
+                <Card className="metric-card" style={{ borderLeft: '5px solid #00b894' }}>
+                    <div className="metric-icon icon-teal">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M12 2a10 10 0 1 0 10 10H12V2z"></path>
                             <path d="M12 2a10 10 0 0 1 10 10H12V2z"></path>
@@ -31,7 +31,7 @@ export const SupportDashboard = () => {
                     <span className="metric-trend">2 in training</span>
                 </Card>
 
-                <Card className="metric-card" style={{ borderLeft: '5px solid #0dc3a2ff' }}>
+                <Card className="metric-card" style={{ borderLeft: '5px solid #8b8d8bff' }}>
                     <div className="metric-icon icon-green">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
@@ -43,8 +43,8 @@ export const SupportDashboard = () => {
                     <span className="metric-trend">Pose Recognition v3</span>
                 </Card>
 
-                <Card className="metric-card" style={{ borderLeft: '5px solid #9e9c99ff' }}>
-                    <div className="metric-icon icon-orange">
+                <Card className="metric-card" style={{ borderLeft: '5px solid #070e70ff' }}>
+                    <div className="metric-icon icon-red">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
                             <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>

@@ -62,6 +62,16 @@
     color: #FF9800;
 }
 
+.icon-teal {
+    background-color: #e0f2f1;
+    color: #00b894;
+}
+
+.icon-red {
+    background-color: #9ab0cb;
+    color: #0c2643;
+}
+
 .metric-label {
     color: #6b7280;
     font-size: 14px;

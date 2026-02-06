@@ -22,6 +22,7 @@ const formatTime = (isoString) => {
 export const LiveMonitor = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const handleBack = () => navigate(-1);
   const [telemetryData, setTelemetryData] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [matrixData, setMatrixData] = useState(Array(32).fill(Array(32).fill(0)));
@@ -32,10 +33,7 @@ export const LiveMonitor = () => {
   const [packetCount, setPacketCount] = useState(0);
   const [lastRxTime, setLastRxTime] = useState(null);
   const [hasDevices, setHasDevices] = useState(true); // Assume true initially to avoid flicker
-  const [showSoilMoisture, setShowSoilMoisture] = useState(false);
-  const [showDistance, setShowDistance] = useState(true);
-  const [showTemp, setShowTemp] = useState(true);
-  const [showHumidity, setShowHumidity] = useState(true);
+  const [activeSensors, setActiveSensors] = useState([]); // Track discovered sensors ['distance', 'temperature', ...]
 
   // Buffer and Stats for 5-second Interval
   const dataBufferRef = useRef([]);
@@ -133,6 +131,20 @@ export const LiveMonitor = () => {
       setIsConnected(true); // Valid data received
       setDataMode('SENSOR');
       setLastRxTime(new Date());
+
+      // Auto-discover sensors
+      setActiveSensors(prev => {
+        const newSensors = new Set(prev);
+        if (data.distance !== undefined) newSensors.add('distance');
+        if (data.temperature !== undefined) newSensors.add('temperature');
+        if (data.humidity !== undefined) newSensors.add('humidity');
+        if (data.soil_moisture !== undefined) newSensors.add('soil_moisture');
+        // Add other potential sensors here
+        if (newSensors.size !== prev.length) {
+          return Array.from(newSensors);
+        }
+        return prev;
+      });
 
       // 1. Update Graph & Display
       setTelemetryData(prev => {
@@ -350,8 +362,13 @@ export const LiveMonitor = () => {
   // --- WAITING FOR CONNECTION UI ---
   if (!isConnected) {
     return (
-      <div className="live-monitor-wrapper monitor-wrapper monitor-wrapper--empty">
-        <div className="empty-state-card">
+      <div className="live-monitor-wrapper monitor-wrapper monitor-wrapper--empty" style={{ justifyContent: 'flex-start' }}>
+        <div style={{ width: '100%', paddingBottom: '20px' }}>
+          <Button onClick={handleBack} className="btn-back">
+            ← Back
+          </Button>
+        </div>
+        <div className="empty-state-card" style={{ margin: 'auto' }}>
           <div className="loader-spinner" style={{ marginBottom: '20px' }}></div>
           <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#374151', marginBottom: '8px' }}>
             {selectedDevice ? `Waiting for ${selectedDevice.name}...` : "ไม่พบการเชื่อมต่อ device"}
@@ -376,7 +393,12 @@ export const LiveMonitor = () => {
   if (activeViewMode === 'MATRIX') {
     return (
       <div className="live-monitor-wrapper monitor-wrapper">
-        <h1>Live Monitor: {selectedDevice ? selectedDevice.name : "Unknown"}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <Button onClick={handleBack} className="btn-back-header">
+            ←
+          </Button>
+          <h1>Live Monitor: {selectedDevice ? selectedDevice.name : "Unknown"}</h1>
+        </div>
         <div className="monitor-grid monitor-flex-row">
           <Card
             className="monitor-column"
@@ -479,106 +501,56 @@ export const LiveMonitor = () => {
     );
   }
 
+  // Helper to get Label and Unit for dynamic rendering
+  const getSensorConfig = (key) => {
+    switch (key) {
+      case 'distance': return { label: 'HC-SR04 DISTANCE', unit: 'cm', className: 'text-distance' };
+      case 'temperature': return { label: 'TEMP', unit: '°C', className: 'text-temp' };
+      case 'humidity': return { label: 'HUMIDITY', unit: '%', className: 'text-humidity' };
+      case 'soil_moisture': return { label: 'SOIL MOISTURE', unit: '%', className: 'text-success' };
+      default: return { label: key.toUpperCase(), unit: '', className: '' };
+    }
+  };
+
   // --- SENSOR MODE VIEW (Default) ---
   return (
     <div className="live-monitor-wrapper monitor-wrapper">
-      <h1>Live Monitor: {selectedDevice ? selectedDevice.name : "Unknown"}</h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <Button onClick={handleBack} className="btn-back-header">
+          ←
+        </Button>
+        <h1>Live Monitor: {selectedDevice ? selectedDevice.name : "Unknown"}</h1>
+      </div>
 
 
       <Card
         className="card-current-pose"
         title="SENSORS"
         titleClassName="margin-bottom-0"
-        headerAction={
-          <div className="sensor-controls">
-            <Button
-              className={`btn-sensor-toggle ${showDistance ? 'active' : 'inactive'}`}
-              onClick={() => setShowDistance(!showDistance)}
-              variant="outline"
-            >
-              {showDistance ? 'HIDE HC-SR04' : 'SHOW HC-SR04'}
-            </Button>
-            <Button
-              className={`btn-sensor-toggle ${showTemp ? 'active' : 'inactive'}`}
-              onClick={() => setShowTemp(!showTemp)}
-              variant="outline"
-            >
-              {showTemp ? 'HIDE TEMP' : 'SHOW TEMP'}
-            </Button>
-            <Button
-              className={`btn-sensor-toggle ${showHumidity ? 'active' : 'inactive'}`}
-              onClick={() => setShowHumidity(!showHumidity)}
-              variant="outline"
-            >
-              {showHumidity ? 'HIDE HUMIDITY' : 'SHOW HUMIDITY'}
-            </Button>
-            <Button
-              className={`btn-sensor-toggle ${showSoilMoisture ? 'active' : 'inactive'}`}
-              onClick={() => setShowSoilMoisture(!showSoilMoisture)}
-              variant="outline"
-            >
-              {showSoilMoisture ? 'HIDE SOIL' : 'SHOW SOIL'}
-            </Button>
-          </div>
-        }
       >
 
         <div className="sensor-grid">
-          {showDistance && (
-            <div className="sensor-card">
-              <div className="sensor-label">HC-SR04 DISTANCE</div>
-              <div className="sensor-value-container">
-                <span className="sensor-value text-distance">
-                  {telemetryData.length > 0 && telemetryData[telemetryData.length - 1].distance !== undefined
-                    ? telemetryData[telemetryData.length - 1].distance.toFixed(1)
-                    : "--"}
-                </span>
-                <span className="sensor-unit">cm</span>
-              </div>
-            </div>
-          )}
+          {activeSensors.length > 0 ? (
+            activeSensors.map((key) => {
+              const config = getSensorConfig(key);
+              const latestData = telemetryData.length > 0 ? telemetryData[telemetryData.length - 1] : {};
+              const val = latestData[key] !== undefined ? latestData[key].toFixed(1) : "--";
 
-          <div className="sensor-row">
-            {showTemp && (
-              <div className="sensor-card">
-                <div className="sensor-label">TEMP</div>
-                <div className="sensor-value-container">
-                  <span className="sensor-value text-temp">
-                    {telemetryData.length > 0 && telemetryData[telemetryData.length - 1].temperature !== undefined
-                      ? telemetryData[telemetryData.length - 1].temperature.toFixed(1)
-                      : "--"}
-                  </span>
-                  <span className="sensor-unit">°C</span>
+              return (
+                <div className="sensor-card" key={key}>
+                  <div className="sensor-label">{config.label}</div>
+                  <div className="sensor-value-container">
+                    <span className={`sensor-value ${config.className}`}>
+                      {val}
+                    </span>
+                    <span className="sensor-unit">{config.unit}</span>
+                  </div>
                 </div>
-              </div>
-            )}
-            {showHumidity && (
-              <div className="sensor-card">
-                <div className="sensor-label">HUMIDITY</div>
-                <div className="sensor-value-container">
-                  <span className="sensor-value text-humidity">
-                    {telemetryData.length > 0 && telemetryData[telemetryData.length - 1].humidity !== undefined
-                      ? telemetryData[telemetryData.length - 1].humidity.toFixed(1)
-                      : "--"}
-                  </span>
-                  <span className="sensor-unit">%</span>
-                </div>
-              </div>
-            )}
-          </div>
-          {showSoilMoisture && (
-            <div className="sensor-row" style={{ marginTop: '10px' }}>
-              <div className="sensor-card" style={{ width: '100%' }}>
-                <div className="sensor-label">SOIL MOISTURE</div>
-                <div className="sensor-value-container">
-                  <span className="sensor-value">
-                    {telemetryData.length > 0 && telemetryData[telemetryData.length - 1].soil_moisture !== undefined
-                      ? telemetryData[telemetryData.length - 1].soil_moisture.toFixed(1)
-                      : "--"}
-                  </span>
-                  <span className="sensor-unit">%</span>
-                </div>
-              </div>
+              );
+            })
+          ) : (
+            <div style={{ textAlign: 'center', padding: '20px', color: '#9ca3af' }}>
+              Waiting for sensor data...
             </div>
           )}
         </div>
