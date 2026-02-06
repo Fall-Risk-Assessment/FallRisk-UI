@@ -198,3 +198,34 @@ export const exportSessionCsv = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+// Get Session Data (JSON for Graph)
+export const getSessionData = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // 1. Get Session Details
+        const session = await prisma.session.findUnique({
+            where: { id: id },
+            include: { device: true }
+        });
+
+        if (!session) return res.status(404).json({ message: "Session not found" });
+
+        const { start_time, end_time, device } = session;
+        const deviceId = device ? device.serial_number : null;
+
+        if (!deviceId) return res.status(400).json({ message: "No device associated" });
+
+        // 2. Fetch Data
+        const finalEndTime = end_time || new Date();
+        const telemetryData = await getSessionTelemetry(deviceId, start_time, finalEndTime);
+
+        // 3. Return JSON
+        res.json(telemetryData);
+
+    } catch (error) {
+        console.error("Get Session Data Error:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
