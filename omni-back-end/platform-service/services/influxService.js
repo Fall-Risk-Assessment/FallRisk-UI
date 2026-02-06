@@ -49,3 +49,42 @@ export async function getRecentTelemetry(deviceId, duration = "-1h") {
         });
     });
 }
+
+/**
+ * Get telemetry for a specific session time range
+ */
+export async function getSessionTelemetry(deviceId, startTime, endTime) {
+    const startIso = new Date(startTime).toISOString();
+    const endIso = new Date(endTime).toISOString();
+
+    const fluxQuery = `
+      from(bucket: "${bucket}")
+        |> range(start: ${startIso}, stop: ${endIso})
+        |> filter(fn: (r) => r["device_id"] == "${deviceId}")
+        |> pivot(rowKey:["_time"], columnKey:["_field"], valueColumn:"_value")
+        |> sort(columns: ["_time"], desc: false)
+    `;
+
+    return new Promise((resolve, reject) => {
+        const rows = [];
+        queryApi.queryRows(fluxQuery, {
+            next(row, tableMeta) {
+                const o = tableMeta.toObject(row);
+                // Clean up InfluxDB internal keys
+                delete o._start;
+                delete o._stop;
+                delete o._measurement;
+                delete o.result;
+                delete o.table;
+                rows.push(o);
+            },
+            error(error) {
+                console.error("Query Failed:", error);
+                reject(error);
+            },
+            complete() {
+                resolve(rows);
+            },
+        });
+    });
+}
