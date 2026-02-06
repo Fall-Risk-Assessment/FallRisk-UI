@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../css/session.css";
 import { Card } from "../components/common/Card";
@@ -13,6 +13,13 @@ export const SessionDetail = () => {
   const [telemetry, setTelemetry] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // --- REPLAY STATE ---
+  const [matrixFrames, setMatrixFrames] = useState([]); // Array of { time, data: 32x32[][] }
+  const [playbackIndex, setPlaybackIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const playbackIntervalRef = useRef(null);
+  const [playbackSpeed, setPlaybackSpeed] = useState(100); // ms per frame
+
   useEffect(() => {
     const fetchSession = async () => {
       try {
@@ -23,14 +30,41 @@ export const SessionDetail = () => {
         // 2. Fetch Telemetry Data (JSON)
         try {
             const telemRes = await dashboardService.getSessionData(id);
-            const data = Array.isArray(telemRes.data) ? telemRes.data : [];
+            const rawData = Array.isArray(telemRes.data) ? telemRes.data : [];
             
-            // Map _time to time for Recharts
-            const formattedData = data.map(d => ({
-                ...d,
-                time: d._time ? new Date(d._time).toLocaleTimeString() : d.timestamp
-            }));
-            setTelemetry(formattedData);
+            const frames = [];
+            const chartData = [];
+
+            rawData.forEach(d => {
+                const timeStr = d._time ? new Date(d._time).toLocaleTimeString() : d.timestamp;
+                
+                // Process Chart Data
+                chartData.push({
+                    ...d,
+                    time: timeStr
+                });
+
+                // Process Matrix Data (if exists)
+                if (d.data) {
+                    try {
+                        // Influx might return it as a stringified JSON
+                        const parsedMatrix = typeof d.data === 'string' ? JSON.parse(d.data) : d.data;
+                        if (Array.isArray(parsedMatrix) && parsedMatrix.length > 0) {
+                            frames.push({
+                                time: timeStr,
+                                timestamp: d._time || d.timestamp,
+                                grid: parsedMatrix
+                            });
+                        }
+                    } catch (e) {
+                        console.warn("Error parsing matrix frame", e);
+                    }
+                }
+            });
+            
+            setTelemetry(chartData);
+            setMatrixFrames(frames);
+
         } catch (err) {
             console.warn("Failed to load telemetry", err);
         }
@@ -43,6 +77,45 @@ export const SessionDetail = () => {
     };
     fetchSession();
   }, [id]);
+
+  // --- PLAYBACK LOGIC ---
+  useEffect(() => {
+    if (isPlaying && matrixFrames.length > 0) {
+        playbackIntervalRef.current = setInterval(() => {
+            setPlaybackIndex(prev => {
+                if (prev >= matrixFrames.length - 1) {
+                    setIsPlaying(false); // Stop at end
+                    return prev;
+                }
+                return prev + 1;
+            });
+        }, playbackSpeed);
+    } else {
+        clearInterval(playbackIntervalRef.current);
+    }
+    return () => clearInterval(playbackIntervalRef.current);
+  }, [isPlaying, matrixFrames, playbackSpeed]);
+
+  const togglePlay = () => setIsPlaying(!isPlaying);
+
+  const handleSliderChange = (e) => {
+      const val = Number(e.target.value);
+      setPlaybackIndex(val);
+      // Optional: Pause on scrub?
+      // setIsPlaying(false); 
+  };
+
+  // Helper for Color (Reused from LiveMonitor roughly)
+  const getCellColor = (value) => {
+    // Simple 0-600 scale visualization
+    const maxVal = 600;
+    const safeVal = Math.min(Math.max(value, 0), maxVal);
+    const intensity = Math.floor((safeVal / maxVal) * 255);
+    // Green to Red gradient ish? Or just classic intensity
+    // LiveMonitor uses: rgb(intensity, 0, 255-intensity) -> Purple/Blueish
+    return `rgb(${intensity}, 0, ${255 - intensity})`;
+  };
+
 
   if (loading) return <div className="session-detail-container">Loading...</div>;
   if (!session) return <div className="session-detail-container">Session not found</div>;
@@ -79,6 +152,8 @@ export const SessionDetail = () => {
       alert("Failed to download CSV. Please try again.");
     }
   };
+
+  const currentFrame = matrixFrames[playbackIndex];
 
   return (
     <div className="session-detail-container" style={{ padding: '20px', display: 'block' }}>
@@ -124,9 +199,67 @@ export const SessionDetail = () => {
           </div>
         </Card>
 
+        {/* --- HEATMAP PLAYER SECTION --- */}
+        {matrixFrames.length > 0 && (
+            <Card title="Session Replay (Heatmap)" className="replay-card">
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                    {/* Heatmap Grid */}
+                    <div 
+                        className="heatmap-grid-dynamic" 
+                        style={{ 
+                            "--cols": 32,
+                            width: 'fit-content',
+                            border: '1px solid #eee'
+                        }}
+                    >
+                        {currentFrame && currentFrame.grid ? (
+                            currentFrame.grid.map((row, rIndex) => (
+                                row.map((val, cIndex) => (
+                                    <div
+                                        key={`${rIndex}-${cIndex}`}
+                                        className="heatmap-cell"
+                                        style={{ backgroundColor: getCellColor(val) }}
+                                        title={`Val: ${val}`}
+                                    />
+                                ))
+                            ))
+                        ) : (
+                            <div style={{width: 300, height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                                No Frame Data
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Controls */}
+                    <div style={{ width: '100%', maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: '#555' }}>
+                             <span>{currentFrame ? currentFrame.time : "--:--:--"}</span>
+                             <span>Frame: {playbackIndex + 1} / {matrixFrames.length}</span>
+                         </div>
+                         
+                         <input 
+                            type="range" 
+                            min="0" 
+                            max={matrixFrames.length - 1} 
+                            value={playbackIndex} 
+                            onChange={handleSliderChange}
+                            style={{ width: '100%', cursor: 'pointer' }}
+                         />
+
+                         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                             <Button onClick={togglePlay} variant="primary" style={{ width: '120px' }}>
+                                 {isPlaying ? "PAUSE" : "PLAY"}
+                             </Button>
+                         </div>
+                    </div>
+                </div>
+            </Card>
+        )}
+
+
         <Card 
             className="timeline-card" 
-            title="Recorded Data" 
+            title="Telemetry Graph" 
             titleClassName="info-label"
             headerAction={
                 <Button 
@@ -158,7 +291,7 @@ export const SessionDetail = () => {
                 </ResponsiveContainer>
             ) : (
                 <div style={{ textAlign: 'center', paddingTop: '150px' }}>
-                  <p style={{ color: '#666' }}>No data recorded for this session.</p>
+                  <p style={{ color: '#666' }}>No sensor data recorded for this session.</p>
                 </div>
             )}
           </div>

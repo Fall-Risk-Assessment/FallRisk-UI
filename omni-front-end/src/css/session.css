@@ -501,3 +501,21 @@ td {
 .mb-8 {
   margin-bottom: 12px;
 }
+
+/* --- Added for Heatmap Replay --- */
+.heatmap-grid-dynamic {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 32), 1fr);
+  gap: 1px;
+  background-color: #000;
+  padding: 10px;
+  aspect-ratio: 1/1;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.heatmap-cell {
+  width: 100%;
+  height: 100%;
+}
