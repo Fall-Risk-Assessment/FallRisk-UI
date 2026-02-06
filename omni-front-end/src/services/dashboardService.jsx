@@ -11,4 +11,6 @@ export const dashboardService = {
     endSession: (sessionId) => api.put(`/admin/end-session/${sessionId}`),
     getSessions: (deviceId) => api.get(`/admin/get-sessions/${deviceId}`),
     getSession: (id) => api.get(`/admin/get-session/${id}`),
+    getSessionData: (id) => api.get(`/admin/get-session-data/${id}`),
+    downloadSessionCsv: (id) => api.get(`/admin/export-session/${id}`, { responseType: 'blob' }),
 };
