@@ -50,7 +50,7 @@ export const AuthPage = () => { // Removed setPage prop
             <Input
               label="Email"
               type="text"
-              placeholder="admin@omni.com"
+              placeholder="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -59,7 +59,7 @@ export const AuthPage = () => { // Removed setPage prop
             <Input
               label="Password"
               type="password"
-              placeholder="password123"
+              placeholder="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />

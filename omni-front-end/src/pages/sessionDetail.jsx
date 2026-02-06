@@ -36,6 +36,31 @@ export const SessionDetail = () => {
     return `${diffMins}m ${diffSecs}s`;
   };
 
+  const handleDownloadCsv = async () => {
+    if (!session || !session.id) return;
+    try {
+      const response = await dashboardService.getSessionData(session.id);
+
+      // Create Blob from response
+      const blob = new Blob([response.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+
+      // Temporary Anchor
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `session-${session.id}.csv`;
+      document.body.appendChild(a);
+      a.click();
+
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Download failed", error);
+      alert("Failed to download CSV. No data might be available.");
+    }
+  };
+
   return (
     <div className="session-detail-container" style={{ padding: '20px', display: 'block' }}>
       <div className="session-main-content">
@@ -80,7 +105,25 @@ export const SessionDetail = () => {
           </div>
         </Card>
 
-        <Card className="timeline-card" title="Recorded Data" titleClassName="info-label">
+        <Card
+          className="timeline-card"
+          title="Recorded Data"
+          titleClassName="info-label"
+          headerAction={
+            <Button
+              onClick={handleDownloadCsv}
+              variant="outline"
+              style={{ fontSize: '12px', padding: '4px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Download CSV
+            </Button>
+          }
+        >
           <div className="timeline-placeholder">
             {/* Placeholder for now until generic InfluxDB Graph is implemented */}
             <div style={{ textAlign: 'center' }}>
