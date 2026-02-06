@@ -138,7 +138,7 @@ function handleSerialData(data) {
             } else {
                 return; // Ignore garbage lines
             }
-            return; // Stay in matrix mode
+            if (isReadingMatrix) return; // Stay in matrix mode only if still reading
         }
 
         // --- STANDARD PARSING ---
@@ -152,6 +152,11 @@ function handleSerialData(data) {
 
         const deviceId = parts[0];
         const profileId = parts[1];
+
+        // Update Global State so Matrix frames can use this ID
+        currentDeviceId = deviceId;
+        currentProfileId = profileId;
+
         const rawJson = parts.slice(2).join('|');
         const metrics = JSON.parse(rawJson);
 
