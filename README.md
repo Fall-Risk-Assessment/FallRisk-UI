@@ -41,13 +41,12 @@ The backend is composed of multiple services. For detailed instructions, refer t
 
 ## Documentation
 
-Additional comprehensive documentation and technical requirements (in Thai) can be found in the root directory:
-- `FALL_RISK_SOFTWARE_YEAR2_TH.md`
-- `FALL_RISK_TOR_BUDGET_YEAR1_TH.md`
-- `FALL_RISK_TOR_REVISED_TH.md`
-- `SENSOR_BUDGET_TH.md`
+Comprehensive documentation, technical requirements, and project proposals (in Thai) can be found in the `Docs/` directory:
+- `Fall_Risk_assessment_Progress1.md`
+- `Proposal_Hospital.md`
 - `SESSION_RECORDING_DOC.md`
 - `system_workflow.md`
+- (And other legacy docs that have been moved)
 
 ## License
 [Insert License Here - if applicable]
