@@ -18,38 +18,39 @@ export const useDeviceInventory = () => {
         project_name: ""
     });
 
-    useEffect(() => {
-        fetchDevices();
-        fetchProfiles();
-        fetchProjects();
-    }, []);
-
-    const fetchDevices = async () => {
+    async function fetchDevices() {
         try {
             const response = await deviceService.getDevices();
             setDeviceList(response.data);
         } catch (error) {
             console.error("Failed to fetch devices:", error);
         }
-    };
+    }
 
-    const fetchProfiles = async () => {
+    async function fetchProfiles() {
         try {
             const response = await profileService.getDeviceProfiles();
             setProfileList(response.data);
         } catch (error) {
             console.error("Failed to fetch profiles:", error);
         }
-    };
+    }
 
-    const fetchProjects = async () => {
+    async function fetchProjects() {
         try {
             const response = await userService.getProjects();
             setProjectList(response.data);
         } catch (error) {
             console.error("Failed to fetch projects:", error);
         }
-    };
+    }
+
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            void Promise.all([fetchDevices(), fetchProfiles(), fetchProjects()]);
+        }, 0);
+        return () => window.clearTimeout(timer);
+    }, []);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;

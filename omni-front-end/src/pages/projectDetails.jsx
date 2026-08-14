@@ -31,7 +31,6 @@ export const ProjectDetails = () => {
     // Add Device Modal State
     const [showAddModal, setShowAddModal] = useState(false);
     const [profileList, setProfileList] = useState([]);
-    const [projectList, setProjectList] = useState([]);
     const [newDeviceData, setNewDeviceData] = useState({
         device_name: "",
         serial_number: "",
@@ -94,7 +93,7 @@ export const ProjectDetails = () => {
                             isOnline: !!isOnline,
                             lastUpdated: latestPoint ? latestPoint.time : null
                         };
-                    } catch (e) {
+        } catch {
                         return { ...device, isOnline: false, lastUpdated: null };
                     }
                 })
@@ -120,15 +119,6 @@ export const ProjectDetails = () => {
             }
         } catch (error) {
             console.error("Failed to fetch profiles:", error);
-        }
-    };
-
-    const fetchProjects = async () => {
-        try {
-            const response = await api.get("/admin/get-projects");
-            setProjectList(response.data);
-        } catch (error) {
-            console.error("Failed to fetch projects:", error);
         }
     };
 
@@ -217,7 +207,6 @@ export const ProjectDetails = () => {
 
     const openAddModal = () => {
         fetchProfiles();
-        fetchProjects();
         setShowAddModal(true);
     };
 

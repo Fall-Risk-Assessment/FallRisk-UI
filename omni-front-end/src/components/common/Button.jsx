@@ -17,7 +17,7 @@ export const Button = ({
     return (
         <button
             type={type}
-            className={className}
+            className={`common-btn ${variant} ${className}`.trim()}
             onClick={onClick}
             disabled={disabled}
             style={style}

@@ -1,16 +1,16 @@
-import React, { useState } from "react";
+import React from "react";
 import "../css/dataLabeling.css";
 import { Card } from "../components/common/Card";
 import { Button } from "../components/common/Button";
 
 export const DataLabeling = () => {
     // Mock data for datasets
-    const [datasets, setDatasets] = useState([
+    const datasets = [
         { id: "DS-2023-001", name: "Morning Routine V1", samples: 1200, labeled: 1200, status: "Completed", date: "2023-10-15" },
         { id: "DS-2023-002", name: "Gym Workout A", samples: 850, labeled: 400, status: "In Progress", date: "2023-10-20" },
         { id: "DS-2023-003", name: "Office Ergonomics", samples: 2000, labeled: 0, status: "Pending", date: "2023-10-22" },
         { id: "DS-2023-004", name: "Walking Variations", samples: 500, labeled: 0, status: "Pending", date: "2023-10-25" },
-    ]);
+    ];
 
     return (
         <div className="data-labeling-container">

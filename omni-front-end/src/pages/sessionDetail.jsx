@@ -18,7 +18,7 @@ export const SessionDetail = () => {
   const [playbackIndex, setPlaybackIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const playbackIntervalRef = useRef(null);
-  const [playbackSpeed, setPlaybackSpeed] = useState(100); // ms per frame
+  const [playbackSpeed] = useState(100); // ms per frame
 
   useEffect(() => {
     const fetchSession = async () => {

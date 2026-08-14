@@ -1,166 +1,55 @@
-import React from "react";
-import "../css/adminDashboard.css";
-import { Card } from "../components/common/Card";
+import { Activity, AlertTriangle, ArrowUpRight, ClipboardCheck, Radio, Users } from 'lucide-react';
+import { createElement } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { BilingualHeading, DemoNotice, RiskBadge } from '../components/clinical';
+import { patients, sessions } from '../services/mockDataService';
+import '../css/clinical.css';
+
+const metrics = [
+  { th: 'ประเมินวันนี้', en: 'Assessments today', value: '18', detail: '+4 จากเมื่อวาน', icon: ClipboardCheck, tone: 'positive' },
+  { th: 'กำลังประเมิน', en: 'Active sessions', value: '2', detail: 'ห้องประเมิน 1, 2', icon: Radio, tone: '' },
+  { th: 'เซ็นเซอร์พร้อมใช้', en: 'Sensors online', value: '3/4', detail: '1 อุปกรณ์รอตรวจสอบ', icon: Activity, tone: '' },
+  { th: 'รอทบทวนผล', en: 'Flagged results', value: '2', detail: 'ต้องติดตามโดยทีมรักษา', icon: AlertTriangle, tone: 'negative' },
+];
 
 export const AdminDashboard = () => {
-  /* Stats with Icons */
-  const stats = [
-    {
-      label: "Total Users",
-      value: "147",
-      change: "+12 this month",
-      trendClass: "trend-up",
-      iconClass: "icon-blue",
-      color: "#2196F3",
-      icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9" cy="7" r="4"></circle>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-        </svg>
-      )
-    },
-    {
-      label: "Device Profiles",
-      value: "8",
-      change: "3 active types",
-      trendClass: "trend-neutral",
-      iconClass: "icon-teal",
-      color: "#00b894",
-      icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-          <line x1="8" y1="21" x2="16" y2="21"></line>
-          <line x1="12" y1="17" x2="12" y2="21"></line>
-        </svg>
-      )
-    },
-    {
-      label: "Active Sessions",
-      value: "23",
-      change: "Real-time",
-      trendClass: "trend-up",
-      iconClass: "icon-green",
-      color: "#8b8d8bff",
-      icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-        </svg>
-      )
-    },
-    {
-      label: "System Alerts",
-      value: "2",
-      change: "Needs attention",
-      trendClass: "trend-down",
-      iconClass: "icon-red",
-      color: "#ef4444",
-      icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-          <line x1="12" y1="9" x2="12" y2="13"></line>
-          <line x1="12" y1="17" x2="12.01" y2="17"></line>
-        </svg>
-      )
-    },
-  ];
+  const navigate = useNavigate();
+  const recentSessions = sessions.slice(0, 5);
 
-  return (
-    <div className="admin-container">
-      {/* ส่วนบน: Stats Cards */}
-      <div className="admin-stats-grid">
-        {stats.map((stat, idx) => (
-          <Card key={idx} className="metric-card" style={{ borderLeft: `5px solid ${stat.color}` }}>
-            <div className={`metric-icon ${stat.iconClass}`}>
-              {stat.icon}
-            </div>
-            <span className="metric-label">{stat.label}</span>
-            <h3 className="metric-value">{stat.value}</h3>
-            <span className={`metric-trend ${stat.trendClass}`}>
-              {stat.change}
-            </span>
-          </Card>
-        ))}
-      </div>
-
-      <div className="admin-middle-row">
-        {/* ส่วนกลางขวา: Quick Actions (Swapped to Left) */}
-        <Card className="card flex-1" title="Quick Actions" titleClassName="section-title">
-          <div className="quick-actions-list">
-            {[
-              { title: "New Project", desc: "Define a new project" },
-              { title: "Add New User", desc: "Create account and assign role" },
-              { title: "View System Logs", desc: "Check API performance and errors" }
-            ].map((action, idx) => (
-              <div key={idx} className="quick-action-item">
-                <h4 className="quick-action-title">{action.title}</h4>
-                <p className="quick-action-desc">{action.desc}</p>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* ส่วนกลางซ้าย: Recent User Activity (Swapped to Right) */}
-        <Card className="card flex-1" title="Recent User Activity">
-          <div className="user-activity-list">
-            {["Sarah Chen", "Dr. Martinez", "John Smith"].map((user, i) => (
-              <div key={i} className="user-activity-item">
-                <div className="user-avatar">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20 21C20 18.2386 17.7614 16 15 16H9C6.23858 16 4 18.2386 4 21" stroke="#95A5A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    <circle cx="12" cy="7" r="4" stroke="#95A5A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="activity-text"><strong>{user}</strong> started a new session</p>
-                  <p className="activity-time">{i + 2} minutes ago</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </div>
-
-      {/* ส่วนล่าง: Project Data Isolation & System Status */}
-      <div className="admin-bottom-row">
-        <Card className="card flex-3" title="Project Data Isolation">
-          <div className="project-grid">
-            {["Yoga Research Lab", "Physical Therapy Clinic", "Sports Performance"].map((project, idx) => (
-              <div key={idx} className="project-card">
-                <h4 className="project-title">{project}</h4>
-                <div className="mt-auto">
-                  <div className="project-stat-row">
-                    <span>Users</span><span className="project-stat-val">{45 + idx * 10}</span>
-                  </div>
-                  <div className="project-stat-row">
-                    <span>Devices</span><span className="project-stat-val">{3 + idx}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* System Status (Moves here) */}
-        <Card className="card flex-1" title="System Status">
-          <div className="system-status-list">
-            {[
-              { label: "API Server", status: "Online" },
-              { label: "Database", status: "Online" },
-              { label: "ML Service", status: "Online" },
-              { label: "Storage", status: "78% Used" }
-            ].map((item, idx) => (
-              <div key={idx} className="system-status-item">
-                <span className="status-label">{item.label}</span>
-                <div className="status-badge-outline">
-                  {item.status}
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </div>
+  return <div className="clinical-page">
+    <div className="page-heading">
+      <BilingualHeading as="h1" th="ภาพรวมการประเมิน" en="Clinical assessment overview" />
+      <DemoNotice compact />
     </div>
-  );
+
+    <section className="metric-grid" aria-label="Today's assessment metrics">
+      {metrics.map(({ th, en, value, detail, icon, tone }) => <article key={en} className="clinical-card metric-card">
+        <div className="metric-top"><BilingualHeading as="h3" th={th} en={en} /><span className="metric-icon">{createElement(icon, { size: 20 })}</span></div>
+        <strong className="metric-value">{value}</strong><span className={`metric-change ${tone}`}>{detail}</span>
+      </article>)}
+    </section>
+
+    <section className="two-column">
+      <article className="clinical-card">
+        <div className="clinical-card-header"><BilingualHeading as="h2" th="ผลประเมินล่าสุด" en="Recent assessment sessions" /><button className="text-button" onClick={() => navigate('/admin/patients')}>ดูผู้รับบริการ <ArrowUpRight size={15} /></button></div>
+        <div className="table-wrap"><table className="clinical-table"><thead><tr><th>ผู้รับบริการ</th><th>คะแนน</th><th>ความเสี่ยง</th><th></th></tr></thead><tbody>
+          {recentSessions.map((session) => { const patient = patients.find((item) => item.id === session.patientId); return <tr key={session.id}><td><div className="person-cell"><span className="avatar">{patient.initials}</span><span><strong>{patient.name}</strong><small>{session.date}</small></span></div></td><td><strong>{session.score}<small>/100</small></strong></td><td><RiskBadge risk={session.risk} /></td><td><button className="text-button" onClick={() => navigate(`/admin/sessions/${session.id}`)}>ดูรายละเอียด</button></td></tr>; })}
+        </tbody></table></div>
+      </article>
+      <aside className="clinical-card">
+        <div className="clinical-card-header"><BilingualHeading as="h2" th="รายการที่ควรติดตาม" en="Needs review" /></div>
+        <div className="alerts-list">
+          <div className="alert-item"><AlertTriangle size={19} /><div><strong>นางมาลี วัฒนา</strong><p>ผลการทรงตัวอยู่ในระดับที่ควรทบทวน / Score 44</p></div></div>
+          <div className="alert-item"><AlertTriangle size={19} /><div><strong>Balance Mat C</strong><p>ไม่พบการเชื่อมต่อมานาน 12 นาที</p></div></div>
+        </div>
+      </aside>
+    </section>
+
+    <section className="two-column">
+      <article className="clinical-card"><div className="clinical-card-header"><BilingualHeading as="h2" th="ผู้รับบริการล่าสุด" en="Patients at a glance" /><Users size={20} color="var(--primary)" /></div><div className="activity-list">
+        {patients.slice(0, 3).map((patient) => <div className="activity-item" key={patient.id}><span className="avatar">{patient.initials}</span><div><strong>{patient.name}</strong><p>{patient.id} · คะแนนล่าสุด {patient.score}/100</p></div><RiskBadge risk={patient.risk} /></div>)}
+      </div></article>
+      <article className="clinical-card"><div className="clinical-card-header"><BilingualHeading as="h2" th="ระบบสด" en="Live system status" /></div><div className="activity-list"><div className="activity-item"><Radio color="var(--success)" /><div><strong>ห้องประเมิน 1</strong><p>PT-002 · กำลังเก็บข้อมูล</p></div></div><div className="activity-item"><Radio color="var(--success)" /><div><strong>ห้องประเมิน 2</strong><p>พร้อมเริ่มรอผู้รับบริการ</p></div></div></div></article>
+    </section>
+  </div>;
 };

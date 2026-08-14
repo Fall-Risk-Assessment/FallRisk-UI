@@ -1,46 +1,36 @@
-import React from "react";
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import logo from "../assets/logo.png";
-import "../css/layout.css";
+import { ClipboardCheck, Home, LogOut } from 'lucide-react';
+import { createElement } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import logo from '../assets/logo.png';
+import '../css/layout.css';
 
-export const LayoutUser = ({ title }) => { // Removed children, currentPage, setPage
+const menuItems = [
+  { label: 'ผลประเมินล่าสุด', en: 'Latest result', path: '/patient/dashboard', icon: Home },
+  { label: 'ประวัติผลประเมิน', en: 'My history', path: '/patient/history', icon: ClipboardCheck },
+];
+
+export const LayoutUser = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const menuItems = [
-    { label: "Dashboard", path: "/dashboard" },
-    { label: "Live Monitor", path: "/live-monitor" },
-    { label: "Sessions", path: "/sessions" }
-  ];
-
   return (
-    <div className="layout-container">
-      <div className="sidebar">
-        <img src={logo} alt="" className="logo" />
+    <div className="layout-container patient-layout">
+      <aside className="sidebar" aria-label="Patient navigation">
+        <div className="logo"><img src={logo} alt="CareConnect Medical Technology" /></div>
+        <div className="role-caption"><strong>ผลการทรงตัว</strong><span>Balance assessment results</span></div>
         <nav className="nav-menu">
-          {menuItems.map((item) => (
-            <button
-              key={item.label}
-              onClick={() => navigate(item.path)}
-              className={`nav-btn ${location.pathname.startsWith(item.path) ? "active" : ""}`}
-            >
-              {item.label}
+          {menuItems.map(({ label, en, path, icon }) => (
+            <button key={path} onClick={() => navigate(path)} className={`nav-btn ${location.pathname.startsWith(path) ? 'active' : ''}`}>
+              {createElement(icon, { size: 18, 'aria-hidden': true })}<span><strong>{label}</strong><small>{en}</small></span>
             </button>
           ))}
         </nav>
-        <button className="nav-logout" onClick={() => navigate("/login")}>Logout</button>
-      </div>
+        <button className="nav-logout" onClick={() => navigate('/login')}><LogOut size={17} />ออกจากระบบ</button>
+      </aside>
       <div className="main-area">
-        <header className="top-nav">
-          <div>
-            <span>John Doe (user)</span>
-          </div>
-        </header>
-        <main className="content-scroll">
-          {title && <h1 style={{ marginBottom: "24px" }}>{title}</h1>}
-          <Outlet />
-        </main>
+        <header className="top-nav"><div className="top-role"><span className="top-avatar">SS</span><span><strong>คุณสุดา สุขใจ</strong><small>Patient demo account</small></span></div></header>
+        <main className="content-scroll"><Outlet /></main>
       </div>
     </div>
-  )
+  );
 };

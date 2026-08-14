@@ -162,7 +162,7 @@ export const LiveMonitor = () => {
         setPacketCount(prev => prev + 1);
         setLastRxTime(new Date());
         setIsConnected(true);
-        setDataMode('MATRIX');
+        // Matrix packets use the heatmap pathway directly.
         return; // Stop processing as scalar sensor data
       }
 
@@ -213,7 +213,7 @@ export const LiveMonitor = () => {
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [searchParams]);
 
   // Auto-Calibration: Set baseline on first valid data receive
   useEffect(() => {
@@ -264,7 +264,7 @@ export const LiveMonitor = () => {
       }
     };
     init();
-  }, []);
+  }, [searchParams]);
 
 
   // Interval Calculation Logic (Every 5 seconds)

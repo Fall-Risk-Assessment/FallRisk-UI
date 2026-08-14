@@ -19,28 +19,30 @@ export const useUserManagement = () => {
     const [filterRole, setFilterRole] = useState("All Roles");
     const [filterProject, setFilterProject] = useState("All Projects");
 
-    useEffect(() => {
-        fetchUsers();
-        fetchProjects();
-    }, []);
-
-    const fetchUsers = async () => {
+    async function fetchUsers() {
         try {
             const response = await userService.getUsers();
             setUserList(response.data);
         } catch (error) {
             console.error("Failed to fetch users:", error);
         }
-    };
+    }
 
-    const fetchProjects = async () => {
+    async function fetchProjects() {
         try {
             const response = await userService.getProjects();
             setProjectList(response.data);
         } catch (error) {
             console.error("Failed to fetch projects:", error);
         }
-    };
+    }
+
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            void Promise.all([fetchUsers(), fetchProjects()]);
+        }, 0);
+        return () => window.clearTimeout(timer);
+    }, []);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
