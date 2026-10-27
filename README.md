@@ -41,6 +41,8 @@ The backend is composed of multiple services. For detailed instructions, refer t
 
 ## Documentation
 
+Start with the [Architecture Decision Record index](adr/README.md) for architectural decisions, their scope and evidence, open decisions, and coding-task history. Coding agents must maintain these records as required by [AGENTS.md](AGENTS.md#architecture-decision-records--mandatory-coding-task-completion).
+
 Comprehensive documentation, technical requirements, and project proposals (in Thai) can be found in the `Docs/` directory:
 - `Fall_Risk_assessment_Progress1.md`
 - `Proposal_Hospital.md`

@@ -1,6 +1,10 @@
 import { AlertTriangle, CheckCircle2, Info } from 'lucide-react';
 import { createElement } from 'react';
-import { getRiskLabel } from '../services/mockDataService';
+const riskLabels = {
+  low: { th: 'ความเสี่ยงต่ำ', en: 'Low risk' },
+  medium: { th: 'ความเสี่ยงปานกลาง', en: 'Moderate risk' },
+  high: { th: 'ต้องติดตามใกล้ชิด', en: 'Needs attention' },
+};
 
 export const BilingualHeading = ({ th, en, as: Tag = 'h2', className = '' }) => (
   <div className={`bilingual-heading ${className}`}>
@@ -10,7 +14,7 @@ export const BilingualHeading = ({ th, en, as: Tag = 'h2', className = '' }) => 
 );
 
 export const RiskBadge = ({ risk }) => {
-  const label = getRiskLabel(risk);
+  const label = riskLabels[risk] || { th: 'ยังไม่มีผล', en: 'Not recorded' };
   return <span className={`risk-badge risk-${risk}`}>{label.th}<small>{label.en}</small></span>;
 };
 

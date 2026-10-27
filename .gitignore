@@ -27,3 +27,6 @@ coverage/
 # IDEs
 .vscode/
 .idea/
+
+# Docs
+Docs/*

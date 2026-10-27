@@ -29,8 +29,8 @@ export const Heatmap = ({ data, width = 300, height = 300 }) => {
   }, [data, width, height]);
 
   return (
-    <div style={{ borderRadius: '8px', overflow: 'hidden', width, height, border: '1px solid var(--border-color)' }}>
-      <canvas ref={canvasRef} width={width} height={height} />
+    <div style={{ borderRadius: 'var(--radius-md)', overflow: 'hidden', width, maxWidth: '100%', aspectRatio: `${width} / ${height}`, border: '1px solid var(--border-color)' }}>
+      <canvas ref={canvasRef} width={width} height={height} role="img" aria-label="Simulated relative pressure intensity, not calibrated clinical pressure" style={{ width: '100%', height: '100%' }} />
     </div>
   );
 };

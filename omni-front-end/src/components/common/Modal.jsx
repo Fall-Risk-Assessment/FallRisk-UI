@@ -1,4 +1,4 @@
-import React from 'react';
+import { useEffect, useId, useRef } from 'react';
 import './common.css';
 
 export const Modal = ({
@@ -9,14 +9,20 @@ export const Modal = ({
     className = '',
     footer
 }) => {
-    if (!isOpen) return null;
+    const dialogRef = useRef(null);
+    const titleId = useId();
+    useEffect(() => {
+        const dialog = dialogRef.current;
+        if (isOpen && !dialog.open) dialog.showModal();
+        if (!isOpen && dialog.open) dialog.close();
+    }, [isOpen]);
 
     return (
-        <div className="common-modal-overlay" onClick={onClose}>
-            <div className={`common-modal-content ${className}`} onClick={e => e.stopPropagation()}>
+        <dialog ref={dialogRef} className={`workspace-modal common-modal-content ${className}`} aria-labelledby={titleId} onCancel={onClose} onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+            <div>
                 <div className="common-modal-header">
-                    <h3 className="common-modal-title">{title}</h3>
-                    <button className="common-modal-close" onClick={onClose}>&times;</button>
+                    <h3 className="common-modal-title" id={titleId}>{title}</h3>
+                    <button className="common-modal-close" type="button" aria-label="Close dialog / ปิด" onClick={onClose}>&times;</button>
                 </div>
                 <div className="common-modal-body">
                     {children}
@@ -27,6 +33,6 @@ export const Modal = ({
                     </div>
                 )}
             </div>
-        </div>
+        </dialog>
     );
 };

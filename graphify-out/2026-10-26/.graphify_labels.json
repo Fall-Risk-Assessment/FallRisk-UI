@@ -1,0 +1,19 @@
+{
+  "0": "react",
+  "1": "App.jsx",
+  "2": "omni-front-end/package.json",
+  "3": "api.js",
+  "4": "bridge.js",
+  "5": "platform-service/package.json",
+  "6": "20260120083600_init_platform_v1/migration.sql",
+  "7": "ingest-service/package.json",
+  "9": "platform-service/index.js",
+  "10": "visualizer.py",
+  "12": "omni-back-end/package.json",
+  "14": "ref_prisma_client",
+  "15": "adminController.js",
+  "18": "deviceProfileController.js",
+  "23": "data.jsx",
+  "26": "verify_api.js",
+  "27": "check_users.js"
+}
